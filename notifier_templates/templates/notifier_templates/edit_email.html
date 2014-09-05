@@ -1,0 +1,21 @@
+{% extends "admin/base_site.html" %}
+{% load staticfiles %}
+
+{% block extrahead %}{{ block.super }}{{ form.media }}{% endblock %}
+
+{% block bodyclass %}email-edit{% endblock %}
+
+{% block content %}
+
+  {% if form %}
+    <div class="change-form">
+      <form method="post">
+        {% csrf_token %}
+        <div class="module">
+        	<table id="edit-email">{{ form }}</table>
+        </div>
+        <input class="form-input-button" type="submit" name="submitButton" value="Send" />
+      </form>
+    </div>
+  {% endif %}
+{% endblock %}

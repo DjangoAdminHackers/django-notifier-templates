@@ -1,0 +1,12 @@
+            <table border="0" cellspacing="0" cellpadding="0" align="center" style="margin:0 auto">
+              <tr>
+                <td height="150">
+                  <a href="http://{{ site_url }}" target="_blank">
+                  {% if logo %}
+                    <img src="http://{{ site_url }}{{ settings.MEDIA_URL }}{{ logo }}" alt="" style="display:block;border:none"></a>
+                  {% else %}
+                    <img src="http://placehold.it/200x70&text=Your+Logo" width="200" height="70" alt="" style="display:block;border:none"></a>
+                  {% endif %}
+                </td>
+              </tr>
+            </table>

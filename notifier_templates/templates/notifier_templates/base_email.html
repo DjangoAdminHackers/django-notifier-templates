@@ -1,0 +1,117 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <title>{% block title %}{{ title }}{% endblock %}</title>
+
+  {% block styles %}
+
+    <style type="text/css">
+      body {
+        width: 100% !important;
+        -webkit-text-size-adjust: 100%;
+        -ms-text-size-adjust: 100%;
+        margin: 0;
+        padding: 0;
+        background: #{{ background_color }};
+      }
+
+      * {
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .ExternalClass * {
+        line-height: 100%;
+      }
+
+      table td {
+        border-collapse: collapse;
+      }
+
+      .full-width-img {
+        width: 100% !important;
+      }
+
+      @media only screen and (max-width: 620px) {
+        *[class].full-width {
+          width: 100% !important;
+        }
+
+      }
+
+      @media only screen and (max-width: 480px) {
+        *[class].full-width-mobile {
+          width: 100% !important;
+        }
+
+      }
+
+      @media only screen and (max-width: 480px) {
+        *[class].block-mobile {
+          display: block;
+        }
+
+      }</style>
+
+    {% endblock %}
+
+</head>
+
+<body>
+
+<table width="100%" bgcolor="#{{ background_color }}" border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <td width="100%">
+
+      <table class="full-width" width="620" border="0" cellspacing="0" cellpadding="0" align="center"
+             style="margin:0 auto">
+        <tr>
+          <td height="20" colspan="3">&nbsp;</td>
+        </tr>
+        <tr>
+          <td width="10">&nbsp;</td>
+          <td bgcolor="#{{ page_color }}">
+
+            {% block topbar %}
+              {% include "notifier_templates/base_email_topbar.html" %}
+            {% endblock %}
+
+            {% block header %}
+              {% include "notifier_templates/base_email_header.html" %}
+            {% endblock %}
+
+            {% block content %}
+
+              {% block introduction %}
+                {% include "notifier_templates/base_email_introduction.html" %}
+              {% endblock %}
+
+              {% block section1 %}
+                {% include "notifier_templates/base_email_section1.html" %}
+              {% endblock %}
+
+              {% block section2 %}
+                {% include "notifier_templates/base_email_section2.html" %}
+              {% endblock %}
+
+          {% endblock %}
+
+            {% block footer %}
+              {% include "notifier_templates/base_email_footer.html" %}
+            {% endblock %}
+
+          </td>
+          <td width="10">&nbsp;</td>
+        </tr>
+      </table>
+
+    </td>
+  </tr>
+</table>
+
+</body>
+
+</html>
