@@ -100,7 +100,6 @@ class HasNotifiers():
             'site': Site.objects.get_current(),
         }
         context.update(vars(self))
-        print context
         return context
 
     def get_notifier_recipients(self, action):
