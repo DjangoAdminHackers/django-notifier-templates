@@ -10,7 +10,7 @@ def generate_email_html(subject, from_email, recipients, html, plain=None, **kwa
     from django.conf import settings
     template = loader.get_template('notifier_templates/notification_email.html')
     
-    if settings.MEDIA_URL.startswiths('http://'):
+    if settings.MEDIA_URL.startswith('http://'):
         media_url = settings.MEDIA_URL 
     else:
         media_url = 'http://%s%s' % (options.site_url, settings.MEDIA_URL)
