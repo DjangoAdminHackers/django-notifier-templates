@@ -9,7 +9,12 @@ from notifier_templates.models import options, EmailTemplate
 def generate_email_html(subject, from_email, recipients, html, plain=None, **kwargs):
     from django.conf import settings
     template = loader.get_template('notifier_templates/notification_email.html')
-
+    
+    if settings.MEDIA_URL.startswiths('http://'):
+        media_url = settings.MEDIA_URL 
+    else:
+        media_url = 'http://%s%s' % (options.site_url, settings.MEDIA_URL)
+    
     html = template.render(Context({
         'title': subject,
         'text_color': '333333',
@@ -23,7 +28,7 @@ def generate_email_html(subject, from_email, recipients, html, plain=None, **kwa
         'site_url': options.site_url,
         'footer': options.email_footer,
         'logo': options.logo,
-        'settings': settings, 
+        'media_url': media_url
     }))
     return html
 
