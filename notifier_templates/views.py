@@ -18,7 +18,8 @@ def notify(request, app_label, model_name, pk, action):
     obj = content_type.model_class().objects.get(pk=pk)
     label = obj.get_notifier_actions()[action]
     recipients = [getattr(x, 'email', None) or x for x in obj.get_notifier_recipients(action)]
-
+    if not recipients:
+        return HttpResponseBadRequest('No recipients found')
     referrer = request.META.get('HTTP_REFERER', reverse('admin:index'))
 
 

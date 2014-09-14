@@ -105,10 +105,15 @@ class HasNotifiers():
     def get_notifier_recipients(self, action):
         # Attempt a sensible guess
         try:
-            return [self.account.default_contact]
+            recipient = self.account.default_contact
         # If that fails raise an error
         except:
             raise NotImplementedError
+
+        if recipient:
+            return [recipient]
+        else:
+            return None
 
 
 class NotifierActions(object):
@@ -123,4 +128,5 @@ class NotifierActions(object):
 
 
 # dbsettings
+
 options = EmailOptions()
