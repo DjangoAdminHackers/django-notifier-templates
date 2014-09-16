@@ -1,0 +1,6 @@
+Django>=1.6,<1.7
+six
+-e git+https://github.com/carljm/django-model-utils.git#egg=django-model-utils
+-e git+https://github.com/DjangoAdminHackers/django-notifier-templates.git#egg=django-notifier-templates
+-e git+https://github.com/DjangoAdminHackers/mcefield.git#egg=mcefield
+-e git+https://github.com/DjangoAdminHackers/django-dbsettings.git#egg=django-dbsettings

@@ -1,5 +1,9 @@
+from datetime import datetime
+
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
+from django.contrib.contenttypes import generic
+from django.contrib.contenttypes.generic import GenericRelation
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.utils.text import slugify
@@ -7,7 +11,6 @@ from django.template import loader, Context, Template
 
 from mcefield.custom_fields import MCEField
 from notifier_templates.admin_settings import EmailOptions
-
 
 class EmailTemplateManager(models.Manager):
 
@@ -62,6 +65,11 @@ class HasNotifiers():
         content_type = ContentType.objects.get_for_model(cls)
         return EmailTemplate.objects.get(name=action, content_type=content_type)
 
+    @classmethod
+    def get_sent_notifications(cls, action):
+        content_type = ContentType.objects.get_for_model(cls)
+        return SentNotification.objects.filter(content_type=content_type, action=action)
+
     def on_notified_success(self, action, request, referrer):
         try:
             on_success = getattr(self, 'on_notified_{}'.format(action))
@@ -115,6 +123,23 @@ class HasNotifiers():
         else:
             return None
 
+    def send_auto_notifer_email(self, action):
+        from notifier_templates.utils import send_html_email
+        content_type = ContentType.objects.get_by_natural_key(self._meta.app_label, self._meta.model_name)
+        label = self.get_notifier_actions()[action]
+        recipients = [getattr(x, 'email', None) or x for x in self.get_notifier_recipients(action)]
+        email_template = self._meta.model.get_email_template(action)
+        context = self.get_notifier_context(action)
+        html=email_template.render(Context(context))
+        send_html_email(
+            subject=email_template.subject, 
+            from_email=options.from_address,
+            recipients=recipients,
+            html=html,
+        )
+        SentNotification(content_object=self, action=action).save()
+        return True
+
 
 class NotifierActions(object):
 
@@ -126,6 +151,13 @@ class NotifierActions(object):
             row_actions += notifier_actions
         return row_actions
 
+
+class SentNotification(models.Model):
+    timestamp = models.DateTimeField(default=datetime.now)
+    content_type = models.ForeignKey(ContentType)
+    object_id = models.PositiveIntegerField()
+    content_object = generic.GenericForeignKey('content_type', 'object_id')
+    action = models.CharField(max_length=128)
 
 # dbsettings
 
