@@ -1,3 +1,4 @@
+from django.contrib.sites.models import Site
 from django.core.mail import EmailMultiAlternatives
 from django.contrib.contenttypes.models import ContentType
 from django.template import loader, Context, Template
@@ -13,8 +14,8 @@ def generate_email_html(subject, from_email, recipients, html, plain=None, **kwa
     if settings.MEDIA_URL.startswith('http://'):
         media_url = settings.MEDIA_URL 
     else:
-        media_url = 'http://%s%s' % (options.site_url, settings.MEDIA_URL)
-    
+        media_url = 'http://%s%s' % (Site.objects.get_current().domain, settings.MEDIA_URL)
+
     html = template.render(Context({
         'title': subject,
         'text_color': '333333',
@@ -28,7 +29,7 @@ def generate_email_html(subject, from_email, recipients, html, plain=None, **kwa
         'site_url': options.site_url,
         'footer': options.email_footer,
         'logo': options.logo,
-        'media_url': media_url
+        'media_url': media_url,
     }))
     return html
 
