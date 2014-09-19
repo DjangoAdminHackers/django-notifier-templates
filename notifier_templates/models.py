@@ -125,8 +125,6 @@ class HasNotifiers():
 
     def send_auto_notifer_email(self, action):
         from notifier_templates.utils import send_html_email
-        content_type = ContentType.objects.get_by_natural_key(self._meta.app_label, self._meta.model_name)
-        label = self.get_notifier_actions()[action]
         recipients = [getattr(x, 'email', None) or x for x in self.get_notifier_recipients(action)]
         email_template = self._meta.model.get_email_template(action)
         context = self.get_notifier_context(action)
