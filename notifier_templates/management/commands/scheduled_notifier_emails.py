@@ -1,7 +1,6 @@
-from time import timezone
-
 from django.core.management.base import BaseCommand
 from django.db import models
+from django.utils import timezone
 
 from notifier_templates.models import HasNotifiers
 
