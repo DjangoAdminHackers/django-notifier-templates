@@ -11,12 +11,11 @@ class EmailTemplateAdmin(admin.ModelAdmin):
     list_display = ('name', 'subject')
 
     fields = ('name', 'subject', 'body', 'available_fields')
-    readonly_fields = ('available_fields',)
+    readonly_fields = ('name', 'available_fields',)
 
     def available_fields(self, obj):
-        model_class = obj.content_type.model_class()
-        obj = model_class.objects.first()
-        fields_html = u', '.join([field for field in obj.get_notifier_context().keys()])
+        fields = obj.content_type.model_class().get_available_fields(obj.name)
+        fields_html = u', '.join([field for field in fields])
         return mark_safe("<div class='help-text'>{}</div>".format(fields_html))
 
 admin.site.register(EmailTemplate, EmailTemplateAdmin)

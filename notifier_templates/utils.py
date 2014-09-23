@@ -1,20 +1,27 @@
+import os
+from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core.mail import EmailMultiAlternatives
 from django.contrib.contenttypes.models import ContentType
 from django.template import loader, Context, Template
 from django.utils import timezone
 from django.utils.html import strip_tags
-from notifier_templates.models import options, EmailTemplate
+from notifier_templates.models import options, EmailTemplate, HasNotifiers
 
 
 def generate_email_html(subject, from_email, recipients, html, plain=None, **kwargs):
-    from django.conf import settings
+
     template = loader.get_template('notifier_templates/notification_email.html')
     
     if settings.MEDIA_URL.startswith('http://'):
         media_url = settings.MEDIA_URL 
     else:
         media_url = 'http://%s%s' % (Site.objects.get_current().domain, settings.MEDIA_URL)
+
+    if options.logo and os.path.exists(os.path.join(settings.MEDIA_ROOT, options.logo)):
+        logo_url = media_url + options.logo
+    else:
+        logo_url = None
 
     html = template.render(Context({
         'title': subject,
@@ -28,9 +35,9 @@ def generate_email_html(subject, from_email, recipients, html, plain=None, **kwa
         'company': options.company,
         'site_url': options.site_url,
         'footer': options.email_footer,
-        'logo': options.logo,
-        'media_url': media_url,
+        'logo_url': logo_url,
     }))
+
     return html
 
 
@@ -68,3 +75,24 @@ def do_notify(app_label, model_name, pk, action):
         html=html,
     )
     return html
+
+
+def generate_all_notifier_templates():
+    """
+    Recurses through all classes that use the mixin
+    and makes sure we've generated the database entry for their template.
+    Only need to call this if new notifiers are added so you can just
+    call it in urls.py or use Django 1.7 startup hooks
+    """
+    def recurse_subclasses(cls_list):
+        for subcls in cls_list:
+            subcls_list = subcls.__subclasses__()
+            if subcls_list:
+                recurse_subclasses(subcls_list)
+            for action in getattr(subcls, 'NOTIFIER_TYPES', []):
+                if not isinstance(action, basestring):
+                    # must be a CHOICES tuple
+                    action = action[0]
+                subcls.get_email_template(action)
+
+    recurse_subclasses([HasNotifiers])

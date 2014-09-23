@@ -12,6 +12,7 @@ from django.template import loader, Context, Template
 from mcefield.custom_fields import MCEField
 from notifier_templates.admin_settings import EmailOptions
 
+
 class EmailTemplateManager(models.Manager):
 
     def get(self, *args, **kwargs):
@@ -58,7 +59,7 @@ class EmailTemplate(models.Model):
         return unicode(self.name)
 
 
-class HasNotifiers():
+class HasNotifiers(object):
 
     @classmethod
     def get_email_template(cls, action):
@@ -93,12 +94,21 @@ class HasNotifiers():
             'label': '{}'.format(label.replace('_', ' ')),
         } for action, label in actions]
 
+    @classmethod
+    def get_available_fields(cls, action):
+        """
+        Return all the fields. Assumes get_notifier_context
+        can handle being passed a blank instance.
+        Override this if you want to handle this yourself.
+        """
+        return cls().get_notifier_context(action).keys()
+
     def get_notifier_context(self, action):
         """
-        Simple default content that just includes:
-        a) the notfier action
-        b) the instance accessed via it's model name {{ foo }} for a Foo
-        c) the output of vars(foo) - which should include most useful properties
+        Simple default context that just includes:
+        a) the notifier action
+        b) the self instance - accessed via it's model name i.e. {{ foo }} for a Foo
+        c) the output of vars(self) - which should include most useful properties
         Override this if you need more control over the context.
         """
 
