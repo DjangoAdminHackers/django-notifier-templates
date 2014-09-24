@@ -8,10 +8,15 @@ from notifier_templates.models import EmailTemplate
 
 class EmailTemplateAdmin(admin.ModelAdmin):
 
-    list_display = ('name', 'subject')
+    list_display = ('friendly_description', 'subject')
 
-    fields = ('name', 'subject', 'body', 'available_fields')
-    readonly_fields = ('name', 'available_fields',)
+    fields = ('friendly_description', 'subject', 'body', 'available_fields')
+    readonly_fields = ('friendly_description', 'available_fields',)
+
+    def friendly_description(self, obj):
+        return u'{} (for {})'.format(obj.name.replace('_', ' ').title(), obj.content_type.model_class()._meta.verbose_name)
+    friendly_description.short_description = 'Template type'
+    friendly_description.admin_order_field = 'name'
 
     def available_fields(self, obj):
         fields = obj.content_type.model_class().get_available_fields(obj.name)
