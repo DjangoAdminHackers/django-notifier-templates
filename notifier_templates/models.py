@@ -13,44 +13,16 @@ from mcefield.custom_fields import MCEField
 from notifier_templates.admin_settings import EmailOptions
 
 
-class EmailTemplateManager(models.Manager):
-
-    def get(self, *args, **kwargs):
-        try:
-            return super(EmailTemplateManager, self).get(*args, **kwargs)
-        except self.model.DoesNotExist:
-            # We could add any global template defaults here
-            # such as company name etc.
-            default_context = Context({})
-            template = loader.get_template('emails/template_{}.html'.format(slugify(unicode(kwargs['name']))))
-            body = template.render(default_context)
-            name = kwargs['name']
-            content_type = kwargs['content_type']
-            # See if the template has: {% with subject="Your subject" %}{% endwith %}
-            # and use that as the subject if so
-            try:
-                subject = template.nodelist[0].extra_context['subject'].var
-            except:
-                subject = name.replace('_', ' ').title()
-            return EmailTemplate.objects.create(
-                name=name,
-                subject=subject,
-                body=body,
-                content_type=content_type,
-            )
-
-
 class EmailTemplate(models.Model):
 
-    name = models.CharField(max_length=256)
-    subject = models.CharField(max_length=256)
+    name = models.CharField("Email type", max_length=256)
+    subject = models.CharField("Default email subject", max_length=256)
     body = MCEField(js='mce_emails.js', null=True, blank=True)
     content_type = models.ForeignKey(ContentType)
+    content_type.verbose_name = 'For'
 
     def render(self, context):
         return Template(self.body).render(context)
-
-    objects = EmailTemplateManager()
 
     class Meta:
         ordering = ['name']

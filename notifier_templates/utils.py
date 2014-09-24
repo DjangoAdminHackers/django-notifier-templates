@@ -77,6 +77,28 @@ def do_notify(app_label, model_name, pk, action):
     return html
 
 
+def generate_notifier_template(cls, name):
+    # We could add any global template defaults here
+    # such as company name etc.
+    default_context = Context({})
+    template = loader.get_template('emails/{}.html'.format(name))
+    body = template.render(default_context)
+    name = name
+    content_type = ContentType.objects.get_for_model(cls)
+    # See if the template has: {% with subject="Your subject" %}{% endwith %}
+    # and use that as the subject if so
+    try:
+        subject = template.nodelist[0].extra_context['subject'].var
+    except:
+        subject = name.replace('_', ' ').title()
+    EmailTemplate.objects.create(
+        name=name,
+        subject=subject,
+        body=body,
+        content_type=content_type,
+    )
+
+
 def generate_all_notifier_templates():
     """
     Recurses through all classes that use the mixin
@@ -92,7 +114,7 @@ def generate_all_notifier_templates():
             for action in getattr(subcls, 'NOTIFIER_TYPES', []):
                 if not isinstance(action, basestring):
                     # must be a CHOICES tuple
-                    action = action[0]
-                subcls.get_email_template(action)
+                    name = action[0]
+                generate_notifier_template(subcls, name)
 
     recurse_subclasses([HasNotifiers])
