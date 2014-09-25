@@ -91,7 +91,7 @@ def generate_notifier_template(cls, name):
         subject = template.nodelist[0].extra_context['subject'].var
     except:
         subject = name.replace('_', ' ').title()
-    EmailTemplate.objects.create(
+    EmailTemplate.objects.get_or_create(
         name=name,
         subject=subject,
         body=body,
