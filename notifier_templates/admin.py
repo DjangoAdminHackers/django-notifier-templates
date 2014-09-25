@@ -14,7 +14,7 @@ class EmailTemplateAdmin(admin.ModelAdmin):
     readonly_fields = ('friendly_description', 'available_fields',)
 
     def friendly_description(self, obj):
-        return u'{} (for {})'.format(obj.name.replace('_', ' ').title(), obj.content_type.model_class()._meta.verbose_name)
+        return u'{}'.format(obj.name.replace('_', ' ').title())
     friendly_description.short_description = 'Template type'
     friendly_description.admin_order_field = 'name'
 
