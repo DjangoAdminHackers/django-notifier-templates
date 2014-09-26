@@ -6,6 +6,7 @@ from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.generic import GenericRelation
 from django.core.urlresolvers import reverse
 from django.db import models
+from django.utils import timezone
 from django.utils.text import slugify
 from django.template import loader, Context, Template
 
@@ -133,7 +134,7 @@ class NotifierActions(object):
 
 
 class SentNotification(models.Model):
-    timestamp = models.DateTimeField(default=datetime.now)
+    timestamp = models.DateTimeField(default=timezone.now)
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
     content_object = generic.GenericForeignKey('content_type', 'object_id')

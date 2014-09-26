@@ -8,6 +8,7 @@ from django.db import models
 from django.core.management import call_command
 
 from shop.models import Invoice
+from django.utils import timezone
 from notifier_templates.models import options, SentNotification
 
 
@@ -19,7 +20,7 @@ class SimpleTest(TestCase):
         options.company = 'Example Inc.'
         options.site_url = 'www.example.com'
 
-        now = datetime.now()
+        now = timezone.now()
         self.now = now
         self.invoice = Invoice.objects.create(due=now + timedelta(days=7))        
     
