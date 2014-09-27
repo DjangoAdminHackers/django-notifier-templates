@@ -23,7 +23,14 @@ class Command(BaseCommand):
                         all_candidates = []
                         for rule in rules:
                             filters = rule.get('filters', {})
-                            q = Q(**filters) if isinstance(filters, dict) else filters
+                            if isinstance(filters, dict):
+                                q = Q(**filters)
+                            elif callable(filters):
+                                q = filters()
+                            elif isinstance(filters, Q):
+                                q = filters
+                            else:
+                                raise TypeError
                             candidates = model.objects.filter(q)
                             date_filters = {}
                             min_timedelta, max_timedelta = rule.get('min_timedelta', None), rule.get('max_timedelta', None)
