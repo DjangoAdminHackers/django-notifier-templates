@@ -1,4 +1,5 @@
 from django.contrib import messages
+from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
@@ -12,6 +13,7 @@ from notifier_templates.models import EmailTemplate, options
 from notifier_templates.utils import send_html_email, generate_email_html
 
 
+@staff_member_required
 def notify(request, app_label, model_name, pk, action):
 
     content_type = ContentType.objects.get_by_natural_key(app_label, model_name)
