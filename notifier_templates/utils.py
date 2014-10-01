@@ -9,7 +9,7 @@ from django.utils.html import strip_tags
 from notifier_templates.models import options, EmailTemplate, HasNotifiers
 
 
-def generate_email_html(subject, from_email, recipients, html, plain=None, **kwargs):
+def generate_email_html(subject, sender, recipients, html, plain=None, **kwargs):
 
     template = loader.get_template('notifier_templates/notification_email.html')
     
@@ -41,8 +41,8 @@ def generate_email_html(subject, from_email, recipients, html, plain=None, **kwa
     return html
 
 
-def send_html_email(subject, from_email, recipients, html, plain=None):
-    html = generate_email_html(subject, from_email, recipients, html, plain)
+def send_html_email(subject, sender, recipients, html, plain=None):
+    html = generate_email_html(subject, sender, recipients, html, plain)
 
     if plain is None:
         plain = strip_tags(html)
@@ -50,7 +50,7 @@ def send_html_email(subject, from_email, recipients, html, plain=None):
     msg = EmailMultiAlternatives(
         subject=subject,
         body=plain,
-        from_email=from_email,
+        from_email=sender,
         to=recipients,
     )
 
@@ -70,7 +70,7 @@ def do_notify(app_label, model_name, pk, action):
     html=email_template.render(Context(context))
     send_html_email(
         subject=email_template.subject, 
-        from_email=options.from_address,
+        sender=options.from_address,
         recipients=recipients,
         html=html,
     )

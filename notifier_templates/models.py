@@ -9,6 +9,8 @@ from django.db import models
 from django.utils import timezone
 from django.utils.text import slugify
 from django.template import loader, Context, Template
+from multi_email_field.fields import MultiEmailField
+from multi_email_field.widgets import MultiEmailWidget
 
 from mcefield.custom_fields import MCEField
 from notifier_templates.admin_settings import EmailOptions
@@ -94,17 +96,9 @@ class HasNotifiers(object):
         return context
 
     def get_notifier_recipients(self, action):
-        # Attempt a sensible guess
-        try:
-            recipient = self.account.default_contact
-        # If that fails raise an error
-        except:
-            raise NotImplementedError
-
-        if recipient:
-            return [recipient]
-        else:
-            return None
+        # TODO make this more general
+        # Currently this expects a list of objects that each have property called 'email'
+        raise NotImplementedError
 
     def send_auto_notifer_email(self, action):
         from notifier_templates.utils import send_html_email
@@ -114,7 +108,7 @@ class HasNotifiers(object):
         html=email_template.render(Context(context))
         send_html_email(
             subject=email_template.subject, 
-            from_email=options.from_address,
+            sender=options.from_address,
             recipients=recipients,
             html=html,
         )
@@ -139,6 +133,12 @@ class SentNotification(models.Model):
     object_id = models.PositiveIntegerField()
     content_object = generic.GenericForeignKey('content_type', 'object_id')
     action = models.CharField(max_length=128)
+
+    # TODO store the whole message
+    # subject = models.CharField(max_length=512)
+    # sender = models.EmailField()
+    # recipients = MultiEmailField(help_text="You can enter multiple email addresses, one per line.")
+    # message = MCEField(config_js_file='mce_emails.js')
 
 # dbsettings
 

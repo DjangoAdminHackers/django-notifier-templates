@@ -1,0 +1,2 @@
+git+https://github.com/DjangoAdminHackers/django-dbsettings.git#egg=django-dbsettings
+git+https://github.com/DjangoAdminHackers/django-multi-email-field#egg=django-multi-email-field
