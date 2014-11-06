@@ -6,9 +6,11 @@ from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.generic import GenericRelation
 from django.core.urlresolvers import reverse
 from django.db import models
+from django.db.models import Q
 from django.utils import timezone
 from django.utils.text import slugify
 from django.template import loader, Context, Template
+
 from multi_email_field.fields import MultiEmailField
 from multi_email_field.widgets import MultiEmailWidget
 
@@ -100,13 +102,13 @@ class HasNotifiers(object):
         # Currently this expects a list of objects that each have property called 'email'
         raise NotImplementedError
 
-    def send_auto_notifer_email(self, action):
+    def get_auto_notifer_email(self, action):
         from notifier_templates.utils import send_html_email
         recipients = [getattr(x, 'email', None) or x for x in self.get_notifier_recipients(action)]
         email_template = self._meta.model.get_email_template(action)
         context = self.get_notifier_context(action)
         html=email_template.render(Context(context))
-        send_html_email(
+        return dict(
             subject=email_template.subject, 
             sender=options.from_address,
             recipients=recipients,
@@ -115,6 +117,44 @@ class HasNotifiers(object):
         SentNotification(content_object=self, action=action).save()
         return True
 
+    def send_auto_notifer_email(self, action):
+        kwargs = self.get_auto_notifer_email(action)
+        send_html_email(**kwargs)
+        kwargs['recipients'] = ','.kwargs['recipients']
+        kwargs['message'] = kwargs['html']
+        del kwargs['html'] 
+        self.store_sent_notification(action, **kwargs)
+        return True
+    
+    @classmethod
+    def get_candidates(cls, action):
+        rules = cls.NOTIFIER_EVENTS[action]
+        # rules can be a dict or list of dicts
+        if isinstance(rules, dict):
+            rules = [rules]
+        all_candidates = []
+        for rule in rules:
+            filters = rule.get('filters', {})
+            if isinstance(filters, dict):
+                q = Q(**filters)
+            elif callable(filters):
+                q = filters()
+            elif isinstance(filters, Q):
+                q = filters
+            else:
+                raise TypeError
+            candidates = cls.objects.filter(q)
+            date_filters = {}
+            min_timedelta, max_timedelta = rule.get('min_timedelta', None), rule.get('max_timedelta', None)
+            if min_timedelta:
+                date_filters[rule['date_field'] + '__gte'] = timezone.now() + min_timedelta
+            if max_timedelta:
+                date_filters[rule['date_field'] + '__lte'] = timezone.now() + max_timedelta
+            candidates = candidates.filter(**date_filters)
+            #make sure email had not been sent before.
+            sent_objects_ids = [values[0] for values in cls.get_sent_notifications(action).values_list('object_id')]
+            all_candidates += candidates.exclude(id__in=sent_objects_ids)
+        return all_candidates
 
 class NotifierActions(object):
 

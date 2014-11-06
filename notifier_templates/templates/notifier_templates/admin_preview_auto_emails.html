@@ -1,0 +1,37 @@
+{% extends "admin/base_site.html" %}
+{% load staticfiles %}
+
+{% block extrahead %}{{ block.super }}{{ form.media }}{% endblock %}
+
+{% block bodyclass %}email-edit{% endblock %}
+
+{% block content %}
+    <div class="change-form">
+        {% if not emails %}
+            <p>No objects matching the auto send rules at the moment. </p>
+            <pre>{{ rules }}</pre>
+        {% endif %}
+      {% for email in emails %}
+          <h2>{{ email.action }}</h2>
+          <h2>#{{ email.obj.id }}  {{ email.obj }}</h2>
+          <table>
+              <tr>
+                  <th>subject</th><td>{{ email.subject }}</td>
+              </tr>
+              <tr>
+                  <th>sender</th><td>{{ email.sender }}</td>
+              </tr>
+              <tr>
+                  <th>recipients</th><td>{{ email.recipients }}</td>
+              </tr>
+              <tr>
+                  <th colspan="2">HTML</th>
+              </tr>
+              <tr>
+                  <td colspan="2">{{ email.html|safe }}</td>
+              </tr>
+          </table>
+          <hr />
+      {% endfor %}
+    </div>
+{% endblock %}

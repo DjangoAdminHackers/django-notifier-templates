@@ -1,0 +1,30 @@
+{% extends "admin/base_site.html" %}
+{% load staticfiles %}
+
+{% block extrahead %}{{ block.super }}{{ form.media }}{% endblock %}
+
+{% block bodyclass %}email-edit{% endblock %}
+
+{% block content %}
+    <div class="change-form">
+      {% for section in sections %}
+        <h2>{{ section.title }}</h2>
+        {% if section.errors %}
+            <p class="errornote">{{ section.errors }}</p>
+        {% endif %}
+        {% if section.has_events %}
+            <p>This model sends automatic notifications. </p>
+            <a href="{% url "admin_preview_auto_emails" section.app_label section.model_name %}">check the auto emails of "{{ section.app_label }}.{{ section.model_name }}". </a>
+        {% endif %}
+
+        {% if section.has_actions %}
+            <p>Can send notifications manually. </p>
+            <ul>
+                {% for url in section.urls %}
+                    <li><a href="{{ url }}">{{ url }}</a></li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+      {% endfor %}
+    </div>
+{% endblock %}
