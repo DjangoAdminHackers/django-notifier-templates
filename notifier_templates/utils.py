@@ -118,3 +118,11 @@ def generate_all_notifier_templates():
                 generate_notifier_template(subcls, name)
 
     recurse_subclasses([HasNotifiers])
+
+
+def reset_all_notifier_templates():
+    # Don't use bulk deletes unless there's a real performance need
+    # as it stops you putting any business logic in delete()
+    for template in EmailTemplate.objects.all():
+        template.delete()
+    generate_all_notifier_templates()
