@@ -37,14 +37,13 @@ def admin_helper(request):
                 if not (has_actions or has_events):
                     section['errors'] = 'Please define at least one of get_notifier_actions and NOTIFIER_EVENTS.'
                     continue
-                for obj in model.objects.all()[:3]:
+                for obj in model.objects.all()[:1]:
                     if has_actions:
                         actions = dict(obj.get_notifier_actions()).keys()
                     elif has_events:
                         actions = obj.NOTIFIER_EVENTS.keys()
                     for action in actions:
                         url = reverse('notify', args=(model._meta.app_label, model._meta.model_name, obj.id, action, ))
-                        print url
                         section['urls'].append(url)
                 
     return render_to_response(
@@ -57,13 +56,12 @@ def admin_helper(request):
 def admin_preview_auto_emails(request, app_label, model_name):
     content_type = ContentType.objects.get_by_natural_key(app_label, model_name)
     model = content_type.model_class()
-    print model
     emails = []
     actions = model.NOTIFIER_EVENTS.keys()
     rules = model.NOTIFIER_EVENTS.__repr__()
     for action in actions:
         candidates = model.get_candidates(action)
-        for obj in candidates[:1]:
+        for obj in candidates[:3]:
             email = obj.get_auto_notifer_email(action)
             email['action'] = action
             email['obj'] = obj
@@ -97,7 +95,8 @@ def notify(request, app_label, model_name, pk, action):
                 recipients=form.cleaned_data['recipients'],
                 html=form.cleaned_data['message'],
             )
-
+            obj.store_sent_notification(action, subject=form.cleaned_data['subject'], 
+                sender=form.cleaned_data['sender'], recipients=','.join(form.cleaned_data['recipients']), message=form.cleaned_data['message'])
             messages.add_message(request, messages.INFO, 'Notification sent')
             referrer = form.cleaned_data['referrer']
             response = obj.on_notified_success(action, request, referrer)
@@ -135,7 +134,7 @@ def notify(request, app_label, model_name, pk, action):
             return HttpResponse(generate_email_html(recipients=[], **initial))
             
         form = EmailEditForm(initial=initial)
-        title = label.title()
+    title = label.title()
 
     return render_to_response(
         'notifier_templates/edit_email.html', {

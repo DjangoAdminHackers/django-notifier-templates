@@ -17,7 +17,6 @@ from multi_email_field.widgets import MultiEmailWidget
 from mcefield.custom_fields import MCEField
 from notifier_templates.admin_settings import EmailOptions
 
-
 class EmailTemplate(models.Model):
 
     name = models.CharField("Email type", max_length=256)
@@ -97,13 +96,23 @@ class HasNotifiers(object):
         context.update(vars(self))
         return context
 
+    def store_sent_notification(self, action, subject, sender, recipients, message):
+        sent_notification = SentNotification(
+            content_object=self, 
+            action=action,
+            subject=subject, 
+            sender=sender, 
+            recipients=recipients, 
+            message=message,
+        )
+        sent_notification.save()
+
     def get_notifier_recipients(self, action):
         # TODO make this more general
         # Currently this expects a list of objects that each have property called 'email'
         raise NotImplementedError
 
     def get_auto_notifer_email(self, action):
-        from notifier_templates.utils import send_html_email
         recipients = [getattr(x, 'email', None) or x for x in self.get_notifier_recipients(action)]
         email_template = self._meta.model.get_email_template(action)
         context = self.get_notifier_context(action)
@@ -114,13 +123,13 @@ class HasNotifiers(object):
             recipients=recipients,
             html=html,
         )
-        SentNotification(content_object=self, action=action).save()
-        return True
 
     def send_auto_notifer_email(self, action):
+        from notifier_templates.utils import send_html_email
         kwargs = self.get_auto_notifer_email(action)
         send_html_email(**kwargs)
-        kwargs['recipients'] = ','.kwargs['recipients']
+        #import pdb; pdb.set_trace()
+        kwargs['recipients'] = ','.join(kwargs['recipients'])
         kwargs['message'] = kwargs['html']
         del kwargs['html'] 
         self.store_sent_notification(action, **kwargs)
@@ -174,11 +183,10 @@ class SentNotification(models.Model):
     content_object = generic.GenericForeignKey('content_type', 'object_id')
     action = models.CharField(max_length=128)
 
-    # TODO store the whole message
-    # subject = models.CharField(max_length=512)
-    # sender = models.EmailField()
-    # recipients = MultiEmailField(help_text="You can enter multiple email addresses, one per line.")
-    # message = MCEField(config_js_file='mce_emails.js')
+    subject = models.CharField(max_length=512)
+    sender = models.EmailField()
+    recipients = MultiEmailField(help_text="You can enter multiple email addresses, one per line.")
+    message = MCEField()
 
 # dbsettings
 

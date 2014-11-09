@@ -3,7 +3,7 @@ from django.contrib import admin
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.utils.safestring import mark_safe
-from notifier_templates.models import EmailTemplate
+from notifier_templates.models import EmailTemplate, SentNotification
 
 
 class EmailTemplateAdmin(admin.ModelAdmin):
@@ -28,3 +28,9 @@ class EmailTemplateAdmin(admin.ModelAdmin):
 
 admin.site.register(EmailTemplate, EmailTemplateAdmin)
 
+
+class SentNotificationAdmin(admin.ModelAdmin):
+    list_display = ('action', 'timestamp', 'subject')
+    list_filter = ('action', )
+
+admin.site.register(SentNotification, SentNotificationAdmin)
