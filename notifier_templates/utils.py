@@ -93,10 +93,12 @@ def generate_notifier_template(cls, name):
         subject = name.replace('_', ' ').title()
     EmailTemplate.objects.get_or_create(
         name=name,
-        subject=subject,
-        body=body,
         content_type=content_type,
-    )
+        defaults={
+            'subject': subject,
+            'body': body,
+            },
+        )
 
 
 def generate_all_notifier_templates():
