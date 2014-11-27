@@ -34,6 +34,8 @@ class EmailTemplate(models.Model):
     def __unicode__(self):
         return unicode(self.name)
 
+class NotifierRefMinxin(object):
+    pass
 
 class HasNotifiers(object):
 
