@@ -118,7 +118,7 @@ def notify(request, app_label, model_name, pk, action):
         # It would be an improvement to pass in the emails themselves
         # or even better - a list of potential recipients with some indication of their role
         # and allow the user to choose
-        recipients = [x.email for x in obj.get_notifier_recipients(action) if getattr(x, 'email', False)]
+        recipients = [getattr(x, 'email', None) or x  for x in obj.get_notifier_recipients(action)]
 
         initial = {
             'subject': email_template.subject,
