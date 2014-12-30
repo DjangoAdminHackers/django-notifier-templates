@@ -123,7 +123,7 @@ def notify(request, app_label, model_name, pk, action):
         initial = {
             'subject': email_template.subject,
             'sender': sender,
-            'recipients': recipients,
+            'recipients': recipients or '',
             'message': email_template.render(Context(context)),
             'referrer': referrer,
 
