@@ -30,10 +30,10 @@ class Invoice(models.Model, HasNotifiers):
     status = StatusField(default=STATUS.draft)
     
     def get_notifier_actions(self):
-        return Choices(
-            (self.NOTIFIER_TYPES.invoice_to_customer, 'Send invoice'),
-        )
+        return [{
+            'type': self.NOTIFIER_TYPES.invoice_to_customer,
+            'label': 'Send invoice',
+        }]
 
     def get_notifier_recipients(self, action):
         return ['example@example.com']
-        

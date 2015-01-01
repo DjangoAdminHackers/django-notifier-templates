@@ -59,18 +59,24 @@ class HasNotifiers(object):
 
     def _get_notifier_actions_list(self):
 
-        actions = self.get_notifier_actions()
         content_type = ContentType.objects.get_for_model(type(self))
 
-        return [{
-            'url': reverse('notify', kwargs={
+        def convert_action(action):
+            # Construct a url from a notification name
+            # so we can pass this straight to row_actions
+            type = action.pop('type')
+            url = reverse('notify',kwargs={
                 'pk': self.pk,
                 'app_label': content_type.app_label,
                 'model_name': content_type.model,
-                'action': action,
-            }),
-            'label': '{}'.format(label.replace('_', ' ')),
-        } for action, label in actions]
+                'action': type,
+            })
+            action.update({
+                'url': url,
+            })
+            return action
+
+        return [convert_action(action) for action in self.get_notifier_actions()]
 
     @classmethod
     def get_available_fields(cls, action):
@@ -166,6 +172,7 @@ class HasNotifiers(object):
             sent_objects_ids = [values[0] for values in cls.get_sent_notifications(action).values_list('object_id')]
             all_candidates += candidates.exclude(id__in=sent_objects_ids)
         return all_candidates
+
 
 class NotifierActions(object):
 
