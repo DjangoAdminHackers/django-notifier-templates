@@ -80,7 +80,9 @@ def notify(request, app_label, model_name, pk, action):
 
     content_type = ContentType.objects.get_by_natural_key(app_label, model_name)
     obj = content_type.model_class().objects.get(pk=pk)
-    label = obj.get_notifier_actions()[action]
+    actions = obj.get_notifier_actions()
+    # Find the label for the first matching action
+    label = [x['label'] for x in actions if x['notification']==action][0]
     referrer = request.META.get('HTTP_REFERER', reverse('admin:index'))
 
     if request.method == 'POST':
