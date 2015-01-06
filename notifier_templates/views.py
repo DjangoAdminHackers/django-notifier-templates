@@ -110,8 +110,8 @@ def notify(request, app_label, model_name, pk, action):
         context = obj.get_notifier_context(action)
 
         try:
-            validate_email(options.from_address)
-            sender = options.from_address
+            validate_email(obj.get_notifier_sender(action))
+            sender = obj.get_notifier_sender(action)
         except ValidationError:
             sender = None
 

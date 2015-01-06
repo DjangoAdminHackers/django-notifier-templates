@@ -120,6 +120,9 @@ class HasNotifiers(object):
         # Currently this expects a list of objects that each have property called 'email'
         raise NotImplementedError
 
+    def get_notifier_sender(self, action):
+        return options.from_address
+
     def get_auto_notifer_email(self, action):
         recipients = [getattr(x, 'email', None) or x for x in self.get_notifier_recipients(action)]
         email_template = self._meta.model.get_email_template(action)
@@ -127,7 +130,7 @@ class HasNotifiers(object):
         html=email_template.render(Context(context))
         return dict(
             subject=email_template.subject, 
-            sender=options.from_address,
+            sender=self.get_notifier_sender(action),
             recipients=recipients,
             html=html,
         )
