@@ -62,7 +62,9 @@ def send_html_email(subject, sender, recipients, html, plain=None):
 def do_notify(app_label, model_name, pk, action):
     content_type = ContentType.objects.get_by_natural_key(app_label, model_name)
     obj = content_type.model_class().objects.get(pk=pk)
-    label = obj.get_notifier_actions()[action]
+    actions = obj.get_notifier_actions()
+    # Find the label for the first matching action
+    label = [x['label'] for x in actions if x['type']==action][0]
     recipients = [getattr(x, 'email', None) or x for x in obj.get_notifier_recipients(action)]
 
     email_template = EmailTemplate.objects.get(name=obj.get_email_template(action))
