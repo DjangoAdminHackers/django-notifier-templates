@@ -6,6 +6,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.template import loader, Context, Template
 from django.utils import timezone
 from django.utils.html import strip_tags
+import pynliner
 from notifier_templates.models import options, EmailTemplate, HasNotifiers
 
 
@@ -38,7 +39,7 @@ def generate_email_html(subject, sender, recipients, html, plain=None, **kwargs)
         'logo_url': logo_url,
     }))
 
-    return html
+    return pynliner.fromString(html)
 
 
 def send_html_email(subject, sender, recipients, html, plain=None):
