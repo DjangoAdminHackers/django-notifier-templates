@@ -29,8 +29,10 @@ class EmailTemplate(models.Model):
     def __unicode__(self):
         return unicode(self.name)
 
+
 class NotifierRefMinxin(object):
     pass
+
 
 class HasNotifiers(object):
 
@@ -195,6 +197,6 @@ class SentNotification(models.Model):
     recipients = MultiEmailField(help_text="You can enter multiple email addresses, one per line.")
     message = MCEField()
 
-# dbsettings
 
+# dbsettings
 options = EmailOptions()
