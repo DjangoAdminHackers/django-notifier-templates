@@ -1,21 +1,16 @@
-from datetime import datetime
-
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
 from django.contrib.contenttypes import generic
-from django.contrib.contenttypes.generic import GenericRelation
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.db.models import Q
 from django.utils import timezone
-from django.utils.text import slugify
-from django.template import loader, Context, Template
-
+from django.template import Context, Template
 from multi_email_field.fields import MultiEmailField
-from multi_email_field.widgets import MultiEmailWidget
 
 from mcefield.custom_fields import MCEField
 from notifier_templates.admin_settings import EmailOptions
+
 
 class EmailTemplate(models.Model):
 
