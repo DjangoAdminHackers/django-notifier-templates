@@ -1,4 +1,4 @@
-var table_attrs = "bgcolor|border|cellspacing|cellpadding|align|width|height";
+var table_attrs = "class|bgcolor|border|cellspacing|cellpadding|align|width|height";
 
 site_mce_config = {
   "content_css": '/static/css/mce_styles.css',
