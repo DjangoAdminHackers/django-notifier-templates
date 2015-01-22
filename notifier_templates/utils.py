@@ -77,6 +77,8 @@ def do_notify(app_label, model_name, pk, action):
         recipients=recipients,
         html=html,
     )
+    obj.store_sent_notification(action, subject=email_template.subject, 
+        sender=obj.get_notifier_sender(action), recipients=','.join(recipients), message=html)
     return html
 
 
