@@ -133,7 +133,9 @@ def notify(request, app_label, model_name, pk, action):
         
         if request.GET.get('preview', False):
             initial['html'] = initial['message']
-            return HttpResponse(generate_email_html(recipients=[], **initial))
+            kwargs = dict(recipients=[])
+            kwargs.update(initial)
+            return HttpResponse(generate_email_html(**kwargs))
             
         form = EmailEditForm(initial=initial)
     title = label.title()
