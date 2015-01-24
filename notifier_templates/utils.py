@@ -42,7 +42,8 @@ def generate_email_html(subject, sender, recipients, html, plain=None, **kwargs)
     return pynliner.fromString(html)
 
 
-def send_html_email(subject, sender, recipients, html, plain=None):
+def send_html_email(subject, sender, recipients, html, attachments=None, plain=None):
+
     html = generate_email_html(subject, sender, recipients, html, plain)
 
     if plain is None:
@@ -53,6 +54,7 @@ def send_html_email(subject, sender, recipients, html, plain=None):
         body=plain,
         from_email=sender,
         to=recipients,
+        attachments=attachments,
     )
 
     msg.attach_alternative(html, "text/html")
@@ -77,8 +79,6 @@ def do_notify(app_label, model_name, pk, action):
         recipients=recipients,
         html=html,
     )
-    obj.store_sent_notification(action, subject=email_template.subject, 
-        sender=obj.get_notifier_sender(action), recipients=','.join(recipients), message=html)
     return html
 
 
