@@ -85,7 +85,7 @@ def notify(request, app_label, model_name, pk, action):
     label = [x['label'] for x in actions if x['type'] == action][0]
     referrer = request.META.get('HTTP_REFERER', reverse('admin:index'))
 
-    if obj.notification_has_attachments(action):
+    if hasattr(obj, 'notification_has_attachments') and obj.notification_has_attachments(action):
         form_class = EmailWithAttachmentsEditForm
     else:
         form_class = EmailEditForm
