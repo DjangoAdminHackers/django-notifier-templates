@@ -199,4 +199,4 @@ class SentNotification(models.Model):
 
 
 # dbsettings
-options = EmailOptions()
+options = EmailOptions(app_label="Emails")

@@ -1,6 +1,5 @@
-from django import forms
 import dbsettings
-from mcefield.custom_fields import MCEFormField, MCEWidget
+from mcefield.custom_fields import MCEWidget
 
 
 class HTMLValue(dbsettings.TextValue):
