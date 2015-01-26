@@ -139,11 +139,18 @@ def notify(request, app_label, model_name, pk, action):
             sender = None
 
         # Try and lookup the 'email' property for each recipient
+        # otherwise assume it's a string of the email address
         # TODO this is a bit specific to the original usage.
         # It would be an improvement to pass in the emails themselves
         # or even better - a list of potential recipients with some indication of their role
         # and allow the user to choose
-        recipients = [getattr(x, 'email', None) or x  for x in obj.get_notifier_recipients(action)]
+        recipients = []
+        for recipient in obj.get_notifier_recipients(action):
+            email = getattr(recipient, 'email', False)
+            if not email and isinstance(recipient, basestring):
+                email = recipient
+            if email:
+                recipients.append(email)
 
         initial = {
             'subject': email_template.subject,
