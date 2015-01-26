@@ -7,7 +7,8 @@ from django.template import loader, Context, Template
 from django.utils import timezone
 from django.utils.html import strip_tags
 import pynliner
-from notifier_templates.models import options, EmailTemplate, HasNotifiers
+from notifier_templates.admin_settings import notifier_dbsettings
+from notifier_templates.models import EmailTemplate, HasNotifiers
 
 
 def generate_email_html(subject, sender, recipients, html, plain=None, **kwargs):
@@ -19,8 +20,8 @@ def generate_email_html(subject, sender, recipients, html, plain=None, **kwargs)
     else:
         media_url = 'http://%s%s' % (Site.objects.get_current().domain, settings.MEDIA_URL)
 
-    if options.logo and os.path.exists(os.path.join(settings.MEDIA_ROOT, options.logo)):
-        logo_url = media_url + options.logo
+    if notifier_dbsettings.logo and os.path.exists(os.path.join(settings.MEDIA_ROOT, notifier_dbsettings.logo)):
+        logo_url = media_url + notifier_dbsettings.logo
     else:
         logo_url = None
 
@@ -33,9 +34,9 @@ def generate_email_html(subject, sender, recipients, html, plain=None, **kwargs)
         'link_color': 'A51777',
         'topbar_color': '522E40',
         'html': html,
-        'company': options.company,
-        'site_url': options.site_url,
-        'footer': options.email_footer,
+        'company': notifier_dbsettings.company,
+        'site_url': notifier_dbsettings.site_url,
+        'footer': notifier_dbsettings.email_footer,
         'logo_url': logo_url,
     }))
 

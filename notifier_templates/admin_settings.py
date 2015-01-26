@@ -24,3 +24,6 @@ class EmailOptions(dbsettings.Group):
     site_url = dbsettings.StringValue(
         help_text='Website url used in email, e.g www.example.com',
     )
+
+
+notifier_dbsettings = EmailOptions(app_label="Emails")

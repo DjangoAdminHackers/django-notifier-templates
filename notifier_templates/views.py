@@ -10,7 +10,7 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext, Context
 
 from notifier_templates.forms import EmailEditForm, EmailWithAttachmentsEditForm
-from notifier_templates.models import HasNotifiers, EmailTemplate, options
+from notifier_templates.models import HasNotifiers, EmailTemplate
 from notifier_templates.utils import send_html_email, generate_email_html
 
 
@@ -85,14 +85,19 @@ def notify(request, app_label, model_name, pk, action):
     label = [x['label'] for x in actions if x['type'] == action][0]
     referrer = request.META.get('HTTP_REFERER', reverse('admin:index'))
 
+
     if hasattr(obj, 'notification_has_attachments') and obj.notification_has_attachments(action):
         form_class = EmailWithAttachmentsEditForm
+
+        pdf_preview_url = obj.get_notifier_attachments_preview_url()
+        form_kwargs = {'pdf_preview_url': pdf_preview_url}
     else:
         form_class = EmailEditForm
+        form_kwargs = {}
 
     if request.method == 'POST':
 
-        form = form_class(request.POST)
+        form = form_class(request.POST, **form_kwargs)
 
         if form.is_valid():
 
@@ -153,7 +158,7 @@ def notify(request, app_label, model_name, pk, action):
             initial['html'] = initial['message']
             return HttpResponse(generate_email_html(recipients=[], **initial))
             
-        form = form_class(initial=initial)
+        form = form_class(initial=initial, **form_kwargs)
     title = label.title()
 
     return render_to_response(

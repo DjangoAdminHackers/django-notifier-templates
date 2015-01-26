@@ -9,7 +9,7 @@ from django.template import Context, Template
 from multi_email_field.fields import MultiEmailField
 
 from mcefield.custom_fields import MCEField
-from notifier_templates.admin_settings import EmailOptions
+from notifier_templates.admin_settings import notifier_dbsettings
 
 
 class EmailTemplate(models.Model):
@@ -118,7 +118,7 @@ class HasNotifiers(object):
         raise NotImplementedError
 
     def get_notifier_sender(self, action):
-        return options.from_address
+        return notifier_dbsettings.from_address
 
     def get_auto_notifer_email(self, action):
         recipients = [getattr(x, 'email', None) or x for x in self.get_notifier_recipients(action)]
@@ -196,7 +196,3 @@ class SentNotification(models.Model):
     sender = models.EmailField()
     recipients = MultiEmailField(help_text="You can enter multiple email addresses, one per line.")
     message = MCEField()
-
-
-# dbsettings
-options = EmailOptions(app_label="Emails")
