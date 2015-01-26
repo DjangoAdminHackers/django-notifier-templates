@@ -90,7 +90,7 @@ def generate_notifier_template(cls, name):
     template = loader.get_template('emails/{}.html'.format(name))
     body = template.render(default_context)
     name = name
-    content_type = ContentType.objects.get_for_model(cls)
+    content_type = ContentType.objects.get_for_model(cls, for_concrete_model=False)
     # See if the template has: {% with subject="Your subject" %}{% endwith %}
     # and use that as the subject if so
     try:
