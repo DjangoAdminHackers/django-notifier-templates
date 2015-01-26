@@ -38,7 +38,7 @@ class HasNotifiers(object):
 
     @classmethod
     def get_email_template(cls, action):
-        content_type = ContentType.objects.get_for_model(cls)
+        content_type = ContentType.objects.get_for_model(cls, for_concrete_models=False)
         return EmailTemplate.objects.get(name=action, content_type=content_type)
 
     @classmethod
@@ -56,7 +56,7 @@ class HasNotifiers(object):
 
     def _get_notifier_actions_list(self):
 
-        content_type = ContentType.objects.get_for_model(type(self))
+        content_type = ContentType.objects.get_for_model(type(self), for_concrete_models=False)
 
         def convert_action(action):
             # Construct a url from a notification name
