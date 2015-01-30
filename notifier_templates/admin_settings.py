@@ -17,7 +17,7 @@ class EmailOptions(dbsettings.Group):
         help_text='The address emails are sent from',
     )
     email_footer = HTMLValue(default="You can edit this text via settings")
-    logo = dbsettings.ImageValue(upload_to='logos', required=False)
+    logo = dbsettings.ImageValue(upload_to='settings', required=False)
     company = dbsettings.StringValue(
         help_text='Company Name used in email',
     )

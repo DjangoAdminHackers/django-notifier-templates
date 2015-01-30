@@ -100,7 +100,7 @@ def notify(request, app_label, model_name, pk, action):
 
         if form.is_valid():
 
-            if form.cleaned_data['include_attachments']:
+            if form.cleaned_data.get('include_attachments', False):
                 attachments = obj.get_notifier_attachments()
             else:
                 attachments = None
