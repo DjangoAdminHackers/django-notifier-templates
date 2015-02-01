@@ -36,7 +36,7 @@ class SimpleTest(TestCase):
         self.assertEqual(SentNotification.objects.all().count(), 0)
 
     def test_far_away_invoice(self):
-        #testing the min_timedelta and max_timedelta are working. 
+        #testing the days_before are working.
         self.invoice.status = 'sent'
         self.invoice.due = self.now + timedelta(days=8)
         self.invoice.save()

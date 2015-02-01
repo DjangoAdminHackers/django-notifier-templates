@@ -174,10 +174,12 @@ class HasNotifiers(NotifierRefMixin):
     @classmethod
     def get_candidates(cls, action):
         rules = cls.NOTIFIER_EVENTS[action]
-        # rules can be a dict or list of dicts
+
+        # Rules can be a dict or list of dicts
         if isinstance(rules, dict):
             rules = [rules]
         all_candidates = []
+
         for rule in rules:
             filters = rule.get('filters', {})
             if isinstance(filters, dict):
@@ -188,17 +190,19 @@ class HasNotifiers(NotifierRefMixin):
                 q = filters
             else:
                 raise TypeError
+
             candidates = cls.objects.filter(q)
             date_filters = {}
-            min_timedelta, max_timedelta = rule.get('min_timedelta', None), rule.get('max_timedelta', None)
-            if min_timedelta:
-                date_filters[rule['date_field'] + '__gte'] = timezone.now() + min_timedelta
-            if max_timedelta:
-                date_filters[rule['date_field'] + '__lte'] = timezone.now() + max_timedelta
+            days_before = rule.get('days_before', None)
+            if days_before:
+                date_filters[rule['date_field'] + '__gte'] = timezone.now() + timezone.timedelta(days_before - 1)
+                date_filters[rule['date_field'] + '__lte'] = timezone.now() + timezone.timedelta(days_before)
             candidates = candidates.filter(**date_filters)
-            #make sure email had not been sent before.
+
+            # Make sure email had not been sent before
             sent_objects_ids = [values[0] for values in cls.get_sent_notifications(action).values_list('object_id')]
             all_candidates += candidates.exclude(id__in=sent_objects_ids)
+
         return all_candidates
 
 
