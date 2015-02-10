@@ -65,7 +65,7 @@ class HasNotifiers(NotifierRefMixin):
     def on_notified_success(self, action, request, referrer):
         try:
             on_success = getattr(self, 'on_notified_{}'.format(action))
-            return on_success(self, action, request, referrer)
+            return on_success(action, request, referrer)
         except AttributeError:
             # No specific callback - default behaviour goes here
             pass
