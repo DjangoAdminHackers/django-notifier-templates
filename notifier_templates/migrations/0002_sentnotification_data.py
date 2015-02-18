@@ -5,6 +5,8 @@ from django.db import models, migrations
 from django.conf import settings
 
 
+# This is pretty bad (controlling migrations from the config), but we want to
+# have a way of ensuring JSON fallback for Postgres < 9.4
 if getattr(settings, 'USE_JSONB', False):
     from django_pgjson.fields import JsonBField as JsonField
 else:
