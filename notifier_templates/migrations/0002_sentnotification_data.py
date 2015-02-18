@@ -2,10 +2,14 @@
 from __future__ import unicode_literals
 
 from django.db import models, migrations
-try:
-    from django_pgjson.fields import JsonBField as OurJsonField
-except ImportError:
-    from django_pgjson.fields import JsonField as OurJsonField
+from django.conf import settings
+
+
+if getattr(settings, 'USE_JSONB', False):
+    from django_pgjson.fields import JsonBField as JsonField
+else:
+    from django_pgjson.fields import JsonField
+
 
 class Migration(migrations.Migration):
 
@@ -17,7 +21,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='sentnotification',
             name='data',
-            field=OurJsonField(default={}),
+            field=JsonField(default={}),
             preserve_default=False,
         ),
     ]
