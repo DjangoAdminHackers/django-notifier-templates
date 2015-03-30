@@ -15,10 +15,10 @@ from notifier_templates.admin_settings import notifier_dbsettings
 
 try:
     import django_pgjson
-    if getattr(settings, 'USE_JSONB', True):
-        from django_pgjson.fields import JsonBField as JsonField
-    else:
+    if getattr(settings, 'JSONB_DISABLED', False):
         from django_pgjson.fields import JsonField
+    else:
+        from django_pgjson.fields import JsonBField as JsonField
 except ImportError:
     django_pgjson = None
 
