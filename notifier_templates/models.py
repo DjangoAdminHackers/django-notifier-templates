@@ -24,7 +24,7 @@ except ImportError:
 
 
 class EmailTemplateManager(models.Manager):
-    def get_or_generate(self, name, content_type)
+    def get_or_generate(self, name, content_type):
         try:
             return EmailTemplate.objects.get(name=name, content_type=content_type)
         except EmailTemplate.DoesNotExist:
