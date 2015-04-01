@@ -23,7 +23,18 @@ except ImportError:
     django_pgjson = None
 
 
+class EmailTemplateManager(models.Manager):
+    def get_or_generate(self, name, content_type)
+        try:
+            return EmailTemplate.objects.get(name=name, content_type=content_type)
+        except EmailTemplate.DoesNotExist:
+            from .utils import generate_notifier_template
+            return generate_notifier_template(self.model, name, content_type=content_type)
+
+
 class EmailTemplate(models.Model):
+
+    objects = EmailTemplateManager()
 
     name = models.CharField("Email type", max_length=256)
     subject = models.CharField("Default email subject", max_length=256)
@@ -36,6 +47,7 @@ class EmailTemplate(models.Model):
 
     class Meta:
         ordering = ['name']
+        unique_together = [('name', 'content_type')]
 
     def __unicode__(self):
         return unicode(self.name)
@@ -55,7 +67,7 @@ class HasNotifiers(NotifierRefMixin):
     @classmethod
     def get_email_template(cls, action):
         content_type = ContentType.objects.get_for_model(cls, for_concrete_model=False)
-        return EmailTemplate.objects.get(name=action, content_type=content_type)
+        return EmailTemplate.objects.get_or_generate(action, content_type)
 
     @classmethod
     def get_sent_notifications(cls, action):

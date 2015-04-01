@@ -71,7 +71,10 @@ def do_notify(app_label, model_name, pk, action):
     label = [x['label'] for x in actions if x['type']==action][0]
     recipients = [getattr(x, 'email', None) or x for x in obj.get_notifier_recipients(action)]
 
-    email_template = EmailTemplate.objects.get(name=obj.get_email_template(action))
+    email_template = EmailTemplate.objects.get_or_generate(
+        name=obj.get_email_template(action),
+        content_type=content_type
+    )
     context = obj.get_notifier_context(action)
     html=email_template.render(Context(context))
     send_html_email(
@@ -83,21 +86,21 @@ def do_notify(app_label, model_name, pk, action):
     return html
 
 
-def generate_notifier_template(cls, name):
+def generate_notifier_template(cls, name, content_type=None):
     # We could add any global template defaults here
     # such as company name etc.
     default_context = Context({})
     template = loader.get_template('emails/{}.html'.format(name))
     body = template.render(default_context)
     name = name
-    content_type = ContentType.objects.get_for_model(cls, for_concrete_model=False)
+    content_type = content_type or ContentType.objects.get_for_model(cls, for_concrete_model=False)
     # See if the template has: {% with subject="Your subject" %}{% endwith %}
     # and use that as the subject if so
     try:
         subject = template.nodelist[0].extra_context['subject'].var
     except:
         subject = name.replace('_', ' ').title()
-    EmailTemplate.objects.get_or_create(
+    return EmailTemplate.objects.get_or_create(
         name=name,
         content_type=content_type,
         defaults={

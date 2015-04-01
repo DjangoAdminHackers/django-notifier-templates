@@ -128,7 +128,7 @@ def notify(request, app_label, model_name, pk, action):
 
     else:
 
-        email_template = EmailTemplate.objects.get(
+        email_template = EmailTemplate.objects.get_or_generate(
             name=obj.get_email_template(action),
             content_type=content_type,
         )
