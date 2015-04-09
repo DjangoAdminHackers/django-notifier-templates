@@ -8,6 +8,7 @@ from django.utils import timezone
 from django.utils.html import strip_tags
 import pynliner
 from notifier_templates.models import options, EmailTemplate, HasNotifiers
+from notifier_templates import notifier_settings
 
 
 def generate_email_html(subject, sender, recipients, html, plain=None, **kwargs):
@@ -38,8 +39,10 @@ def generate_email_html(subject, sender, recipients, html, plain=None, **kwargs)
         'footer': options.email_footer,
         'logo_url': logo_url,
     }))
-
-    return pynliner.fromString(html)
+    if notifier_settings.USE_PYNLINER:
+        return pynliner.fromString(html)
+    else:
+        return html
 
 
 def send_html_email(subject, sender, recipients, html, plain=None):
