@@ -2,6 +2,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
 from django.contrib.contenttypes import generic
 from django.core.urlresolvers import reverse
+from django.conf import settings
 from django.db import models
 from django.db.models import Q
 from django.utils import timezone
@@ -9,10 +10,31 @@ from django.template import Context, Template
 from multi_email_field.fields import MultiEmailField
 
 from mcefield.custom_fields import MCEField
-from notifier_templates.admin_settings import EmailOptions
+from notifier_templates.admin_settings import notifier_dbsettings
+
+
+try:
+    import django_pgjson
+    if getattr(settings, 'JSONB_DISABLED', False):
+        from django_pgjson.fields import JsonField
+    else:
+        from django_pgjson.fields import JsonBField as JsonField
+except ImportError:
+    django_pgjson = None
+
+
+class EmailTemplateManager(models.Manager):
+    def get_or_generate(self, name, content_type):
+        try:
+            return EmailTemplate.objects.get(name=name, content_type=content_type)
+        except EmailTemplate.DoesNotExist:
+            from .utils import generate_notifier_template
+            return generate_notifier_template(self.model, name, content_type=content_type)
 
 
 class EmailTemplate(models.Model):
+
+    objects = EmailTemplateManager()
 
     name = models.CharField("Email type", max_length=256)
     subject = models.CharField("Default email subject", max_length=256)
@@ -25,21 +47,27 @@ class EmailTemplate(models.Model):
 
     class Meta:
         ordering = ['name']
+        unique_together = [('name', 'content_type')]
 
     def __unicode__(self):
         return unicode(self.name)
 
 
-class NotifierRefMinxin(object):
-    pass
+def get_obj_ref_str(obj):
+    return u'%s.%s:%s' % (obj._meta.app_label, obj._meta.model_name, obj.pk)
 
 
-class HasNotifiers(object):
+class NotifierRefMixin(object):
+    def get_obj_ref_str(self):
+        return get_obj_ref_str(self)
+
+
+class HasNotifiers(NotifierRefMixin):
 
     @classmethod
     def get_email_template(cls, action):
-        content_type = ContentType.objects.get_for_model(cls)
-        return EmailTemplate.objects.get(name=action, content_type=content_type)
+        content_type = ContentType.objects.get_for_model(cls, for_concrete_model=False)
+        return EmailTemplate.objects.get_or_generate(action, content_type)
 
     @classmethod
     def get_sent_notifications(cls, action):
@@ -49,14 +77,14 @@ class HasNotifiers(object):
     def on_notified_success(self, action, request, referrer):
         try:
             on_success = getattr(self, 'on_notified_{}'.format(action))
-            return on_success(self, action, request, referrer)
+            return on_success(action, request, referrer)
         except AttributeError:
             # No specific callback - default behaviour goes here
             pass
 
     def _get_notifier_actions_list(self):
 
-        content_type = ContentType.objects.get_for_model(type(self))
+        content_type = ContentType.objects.get_for_model(type(self), for_concrete_model=False)
 
         def convert_action(action):
             # Construct a url from a notification name
@@ -101,7 +129,11 @@ class HasNotifiers(object):
         context.update(vars(self))
         return context
 
+    def get_notifier_refs(self, action):
+        return []
+
     def store_sent_notification(self, action, subject, sender, recipients, message):
+        refs = self.get_notifier_refs(action)
         sent_notification = SentNotification(
             content_object=self, 
             action=action,
@@ -110,6 +142,13 @@ class HasNotifiers(object):
             recipients=recipients, 
             message=message,
         )
+        if refs and getattr(settings, 'NOTIFIER_REFS_ENABLED', False):
+            data = {}
+            for k, ref in refs.items():
+                key = u'%s.%s' % (ref._meta.app_label, ref._meta.model_name)
+                value = ref.pk
+                data[key] = value
+            sent_notification.data = data
         sent_notification.save()
 
     def get_notifier_recipients(self, action):
@@ -118,7 +157,7 @@ class HasNotifiers(object):
         raise NotImplementedError
 
     def get_notifier_sender(self, action):
-        return options.from_address
+        return notifier_dbsettings.from_address
 
     def get_auto_notifer_email(self, action):
         recipients = [getattr(x, 'email', None) or x for x in self.get_notifier_recipients(action)]
@@ -131,6 +170,7 @@ class HasNotifiers(object):
             recipients=recipients,
             html=html,
         )
+
 
     def send_auto_notifer_email(self, action):
         from notifier_templates.utils import send_html_email
@@ -146,10 +186,12 @@ class HasNotifiers(object):
     @classmethod
     def get_candidates(cls, action):
         rules = cls.NOTIFIER_EVENTS[action]
-        # rules can be a dict or list of dicts
+
+        # Rules can be a dict or list of dicts
         if isinstance(rules, dict):
             rules = [rules]
         all_candidates = []
+
         for rule in rules:
             filters = rule.get('filters', {})
             if isinstance(filters, dict):
@@ -160,17 +202,19 @@ class HasNotifiers(object):
                 q = filters
             else:
                 raise TypeError
+
             candidates = cls.objects.filter(q)
             date_filters = {}
-            min_timedelta, max_timedelta = rule.get('min_timedelta', None), rule.get('max_timedelta', None)
-            if min_timedelta:
-                date_filters[rule['date_field'] + '__gte'] = timezone.now() + min_timedelta
-            if max_timedelta:
-                date_filters[rule['date_field'] + '__lte'] = timezone.now() + max_timedelta
+            days_before = rule.get('days_before', None)
+            if days_before:
+                date_filters[rule['date_field'] + '__gte'] = timezone.now() + timezone.timedelta(days_before - 1)
+                date_filters[rule['date_field'] + '__lte'] = timezone.now() + timezone.timedelta(days_before)
             candidates = candidates.filter(**date_filters)
-            #make sure email had not been sent before.
+
+            # Make sure email had not been sent before
             sent_objects_ids = [values[0] for values in cls.get_sent_notifications(action).values_list('object_id')]
             all_candidates += candidates.exclude(id__in=sent_objects_ids)
+
         return all_candidates
 
 
@@ -197,6 +241,7 @@ class SentNotification(models.Model):
     recipients = MultiEmailField(help_text="You can enter multiple email addresses, one per line.")
     message = MCEField()
 
+    if django_pgjson and getattr(settings, 'NOTIFIER_REFS_ENABLED', False):
+        data = JsonField()  # can pass attributes like null, blank, ecc.
 
-# dbsettings
-options = EmailOptions()
+

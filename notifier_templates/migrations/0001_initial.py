@@ -1,46 +1,48 @@
-# encoding: utf-8
-import datetime
-from south.db import db
-from south.v2 import SchemaMigration
-from django.db import models
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 
-class Migration(SchemaMigration):
-
-    def forwards(self, orm):
-        
-        # Adding model 'EmailTemplate'
-        db.create_table(u'notifier_templates_emailtemplate', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=256)),
-            ('subject', self.gf('django.db.models.fields.CharField')(max_length=256)),
-            ('body', self.gf('mcefield.custom_fields.MCEField')(max_length=4000, null=True, blank=True)),
-            ('content_type', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['contenttypes.ContentType'])),
-        ))
-        db.send_create_signal(u'notifier_templates', ['EmailTemplate'])
+from django.db import models, migrations
+import mcefield.custom_fields
+import django.utils.timezone
+import multi_email_field.fields
 
 
-    def backwards(self, orm):
-        
-        # Deleting model 'EmailTemplate'
-        db.delete_table(u'notifier_templates_emailtemplate')
+class Migration(migrations.Migration):
 
+    dependencies = [
+        ('contenttypes', '0001_initial'),
+    ]
 
-    models = {
-        u'contenttypes.contenttype': {
-            'Meta': {'unique_together': "(('app_label', 'model'),)", 'object_name': 'ContentType', 'db_table': "'django_content_type'"},
-            'app_label': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'model': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '100'})
-        },
-        u'notifier_templates.emailtemplate': {
-            'Meta': {'object_name': 'EmailTemplate'},
-            'body': ('mcefield.custom_fields.MCEField', [], {'max_length': '4000', 'null': 'True', 'blank': 'True'}),
-            'content_type': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['contenttypes.ContentType']"}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '256'}),
-            'subject': ('django.db.models.fields.CharField', [], {'max_length': '256'})
-        }
-    }
-
-    complete_apps = ['notifier_templates']
+    operations = [
+        migrations.CreateModel(
+            name='EmailTemplate',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('name', models.CharField(max_length=256, verbose_name=b'Email type')),
+                ('subject', models.CharField(max_length=256, verbose_name=b'Default email subject')),
+                ('body', mcefield.custom_fields.MCEField(max_length=4000, null=True, blank=True)),
+                ('content_type', models.ForeignKey(to='contenttypes.ContentType')),
+            ],
+            options={
+                'ordering': ['name'],
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='SentNotification',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('timestamp', models.DateTimeField(default=django.utils.timezone.now)),
+                ('object_id', models.PositiveIntegerField()),
+                ('action', models.CharField(max_length=128)),
+                ('subject', models.CharField(max_length=512)),
+                ('sender', models.EmailField(max_length=75)),
+                ('recipients', multi_email_field.fields.MultiEmailField(help_text=b'You can enter multiple email addresses, one per line.')),
+                ('message', mcefield.custom_fields.MCEField(max_length=4000)),
+                ('content_type', models.ForeignKey(to='contenttypes.ContentType')),
+            ],
+            options={
+            },
+            bases=(models.Model,),
+        ),
+    ]

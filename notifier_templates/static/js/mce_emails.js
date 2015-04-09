@@ -1,4 +1,4 @@
-var table_attrs = "class|bgcolor|border|cellspacing|cellpadding|align|width|height";
+var table_attrs = "class|bgcolor|border|cellspacing|cellpadding|align|width|height|colspan";
 // Note we've hard-coded to allow styles attribute on th to workaround a bug in pynliner.
 site_mce_config = {
   "content_css": '/static/css/mce_styles.css',

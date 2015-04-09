@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name='django-notifier-templates',
-    version='0.1',
+    version='0.11',
     description='django notifier templates',
     author='Andy Baker',
     author_email='andy@andybak.net',

@@ -9,8 +9,8 @@ from django.http import HttpResponse, HttpResponseRedirect, HttpResponseBadReque
 from django.shortcuts import render_to_response
 from django.template import RequestContext, Context
 
-from notifier_templates.forms import EmailEditForm
-from notifier_templates.models import HasNotifiers, EmailTemplate, options
+from notifier_templates.forms import EmailEditForm, EmailWithAttachmentsEditForm
+from notifier_templates.models import HasNotifiers, EmailTemplate
 from notifier_templates.utils import send_html_email, generate_email_html
 
 
@@ -82,23 +82,45 @@ def notify(request, app_label, model_name, pk, action):
     obj = content_type.model_class().objects.get(pk=pk)
     actions = obj.get_notifier_actions()
     # Find the label for the first matching action
-    label = [x['label'] for x in actions if x['type']==action][0]
+    label = [x['label'] for x in actions if x['type'] == action][0]
     referrer = request.META.get('HTTP_REFERER', reverse('admin:index'))
+
+    if hasattr(obj, 'notification_has_attachments') and obj.notification_has_attachments(action):
+        form_class = EmailWithAttachmentsEditForm
+
+        pdf_preview_url = obj.get_notifier_attachments_preview_url()
+        form_kwargs = {'pdf_preview_url': pdf_preview_url}
+    else:
+        form_class = EmailEditForm
+        form_kwargs = {}
 
     if request.method == 'POST':
 
-        form = EmailEditForm(request.POST)
+        form = form_class(request.POST, **form_kwargs)
 
         if form.is_valid():
+
+            if form.cleaned_data.get('include_attachments', False):
+                attachments = obj.get_notifier_attachments()
+            else:
+                attachments = None
 
             send_html_email(
                 subject=form.cleaned_data['subject'],
                 sender=form.cleaned_data['sender'],
                 recipients=form.cleaned_data['recipients'],
                 html=form.cleaned_data['message'],
+                attachments=attachments,
             )
-            obj.store_sent_notification(action, subject=form.cleaned_data['subject'], 
-                sender=form.cleaned_data['sender'], recipients=','.join(form.cleaned_data['recipients']), message=form.cleaned_data['message'])
+
+            obj.store_sent_notification(
+                action,
+                subject=form.cleaned_data['subject'],
+                sender=form.cleaned_data['sender'],
+                recipients=','.join(form.cleaned_data['recipients']),
+                message=form.cleaned_data['message']
+            )
+
             messages.add_message(request, messages.INFO, 'Notification sent')
             referrer = form.cleaned_data['referrer']
             response = obj.on_notified_success(action, request, referrer)
@@ -106,7 +128,10 @@ def notify(request, app_label, model_name, pk, action):
 
     else:
 
-        email_template = EmailTemplate.objects.get(name=obj.get_email_template(action))
+        email_template = EmailTemplate.objects.get_or_generate(
+            name=obj.get_email_template(action),
+            content_type=content_type,
+        )
         context = obj.get_notifier_context(action)
 
         try:
@@ -116,11 +141,18 @@ def notify(request, app_label, model_name, pk, action):
             sender = None
 
         # Try and lookup the 'email' property for each recipient
+        # otherwise assume it's a string of the email address
         # TODO this is a bit specific to the original usage.
         # It would be an improvement to pass in the emails themselves
         # or even better - a list of potential recipients with some indication of their role
         # and allow the user to choose
-        recipients = [getattr(x, 'email', None) or x  for x in obj.get_notifier_recipients(action)]
+        recipients = []
+        for recipient in obj.get_notifier_recipients(action):
+            email = getattr(recipient, 'email', False)
+            if not email and isinstance(recipient, basestring):
+                email = recipient
+            if email:
+                recipients.append(email)
 
         initial = {
             'subject': email_template.subject,
@@ -133,11 +165,9 @@ def notify(request, app_label, model_name, pk, action):
         
         if request.GET.get('preview', False):
             initial['html'] = initial['message']
-            kwargs = dict(recipients=[])
-            kwargs.update(initial)
-            return HttpResponse(generate_email_html(**kwargs))
+            return HttpResponse(generate_email_html(recipients=[], **initial))
             
-        form = EmailEditForm(initial=initial)
+        form = form_class(initial=initial, **form_kwargs)
     title = label.title()
 
     return render_to_response(

@@ -22,8 +22,16 @@ class Invoice(models.Model, HasNotifiers):
     )
     
     NOTIFIER_EVENTS = {
-        NOTIFIER_TYPES.invoice_7_days_before_due: {'date_field': 'due', 'min_timedelta': timedelta(days=0), 'max_timedelta': timedelta(days=1), 'filters': {'status': STATUS.sent}, },
-        NOTIFIER_TYPES.invoice_1_day_before_due: {'date_field': 'due', 'min_timedelta': timedelta(days=0), 'max_timedelta': timedelta(days=7), 'filters': {'status': STATUS.sent}, },
+        NOTIFIER_TYPES.invoice_7_days_before_due: {
+            'date_field': 'due',
+            'days_before': 7,
+            'filters': {'status': STATUS.sent},
+        },
+        NOTIFIER_TYPES.invoice_1_day_before_due: {
+            'date_field': 'due',
+            'days_before': 7,
+            'filters': {'status': STATUS.sent},
+        },
     }
 
     due = models.DateField(null=True, blank=True)

@@ -1,6 +1,5 @@
-from django import forms
 import dbsettings
-from mcefield.custom_fields import MCEFormField, MCEWidget
+from mcefield.custom_fields import MCEWidget
 
 
 class HTMLValue(dbsettings.TextValue):
@@ -9,18 +8,22 @@ class HTMLValue(dbsettings.TextValue):
 
 
 class EmailOptions(dbsettings.Group):
+
     test_mode = dbsettings.BooleanValue(
-            default=False,
-            help_text="All emails will be sent to test recipients instead of original recipients.",
-        )
+        default=False,
+        help_text="All emails will be sent to test recipients instead of original recipients.",
+    )
     from_address = dbsettings.StringValue(
-            help_text='The address emails are sent from',
-        )
+        help_text='The address emails are sent from',
+    )
     email_footer = HTMLValue(default="You can edit this text via settings")
     logo = dbsettings.ImageValue(upload_to='settings', required=False)
     company = dbsettings.StringValue(
-            help_text='Company Name used in email',
-        )
+        help_text='Company Name used in email',
+    )
     site_url = dbsettings.StringValue(
-            help_text='Website url used in email, e.g www.example.com',
-        )
+        help_text='Website url used in email, e.g www.example.com',
+    )
+
+
+notifier_dbsettings = EmailOptions(app_label="Emails")
