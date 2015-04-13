@@ -1,9 +1,8 @@
-from django import forms
 from django.contrib import admin
 from django.conf import settings
-from django.contrib.contenttypes.models import ContentType
 from django.utils.safestring import mark_safe
-from notifier_templates.models import EmailTemplate, SentNotification
+from .models import EmailTemplate, SentNotification
+from .utils import generate_all_notifier_templates
 
 
 class EmailTemplateAdmin(admin.ModelAdmin):
@@ -22,11 +21,19 @@ class EmailTemplateAdmin(admin.ModelAdmin):
         fields = obj.content_type.model_class().get_available_fields(obj.name)
         fields_html = u', '.join([field for field in fields])
         return mark_safe("<div class='help-text'>{}</div>".format(fields_html))
+    
+    def get_changelist(self, request, **kwargs):
+        generate_all_notifier_templates()
+        return super(EmailTemplateAdmin, self).get_changelist(request, **kwargs)
 
     def has_delete_permission(self, request, obj=None):
         return False
+    
+    def has_add_permission(self, request):
+        return False
 
 admin.site.register(EmailTemplate, EmailTemplateAdmin)
+
 
 class DataFilter(admin.SimpleListFilter):
     title = 'data filter'
