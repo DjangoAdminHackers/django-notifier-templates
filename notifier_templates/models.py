@@ -24,12 +24,11 @@ except ImportError:
 
 
 class EmailTemplateManager(models.Manager):
-    def get_or_generate(self, name, content_type):
-        try:
-            return EmailTemplate.objects.get(name=name, content_type=content_type)
-        except EmailTemplate.DoesNotExist:
-            from .utils import generate_notifier_template
-            return generate_notifier_template(self.model, name, content_type=content_type)
+    def get(self, *args, **kwargs):
+        if not self.exists():
+            from .utils import generate_all_notifier_templates
+            generate_all_notifier_templates()
+        return super(EmailTemplateManager, self).get(*args, **kwargs)
 
 
 class EmailTemplate(models.Model):
@@ -66,8 +65,11 @@ class HasNotifiers(NotifierRefMixin):
 
     @classmethod
     def get_email_template(cls, action):
-        content_type = ContentType.objects.get_for_model(cls, for_concrete_model=False)
-        return EmailTemplate.objects.get_or_generate(action, content_type)
+        content_type = ContentType.objects.get_for_model(
+            cls,
+            for_concrete_model=False
+        )
+        return EmailTemplate.objects.get(name=action, content_type=content_type)
 
     @classmethod
     def get_sent_notifications(cls, action):
