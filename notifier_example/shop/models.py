@@ -7,6 +7,7 @@ from model_utils.fields import StatusField
 
 from notifier_templates.models import HasNotifiers
 
+
 class Invoice(models.Model, HasNotifiers):
 
     STATUS = Choices(
