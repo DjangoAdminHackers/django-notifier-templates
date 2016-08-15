@@ -1,0 +1,7 @@
+{% with subject="Invoice due tomorrow" %}{% endwith %}
+{% verbatim %}
+    <p>Dear {{ billing_contact }}</p>
+    <p>Please find attached {{ invoice_type }} invoice #{{ invoice_number }}.</p>
+  <p>£{{ total_plus_vat }} is due in 1 day, by {{ date_due }}</p>
+  {{ items }}
+{% endverbatim %}
