@@ -7,6 +7,8 @@ urlpatterns = patterns('',
     # Examples:
     # url(r'^$', 'notifier_example.views.home', name='home'),
     # url(r'^blog/', include('blog.urls')),
+    
+    url(r'^admin/notifier/', include('notifier_templates.urls')),
 
     url(r'^admin/', include(admin.site.urls)),
 )
