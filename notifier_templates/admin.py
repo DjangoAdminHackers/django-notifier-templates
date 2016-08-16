@@ -22,10 +22,6 @@ class EmailTemplateAdmin(admin.ModelAdmin):
         fields_html = u', '.join([field for field in fields])
         return mark_safe("<div class='help-text'>{}</div>".format(fields_html))
     
-    def get_changelist(self, request, **kwargs):
-        generate_all_notifier_templates()
-        return super(EmailTemplateAdmin, self).get_changelist(request, **kwargs)
-
     def has_delete_permission(self, request, obj=None):
         return False
     
