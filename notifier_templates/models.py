@@ -137,11 +137,11 @@ class HasNotifiers(NotifierRefMixin):
     def store_sent_notification(self, action, subject, sender, recipients, message):
         refs = self.get_notifier_refs(action)
         sent_notification = SentNotification(
-            content_object=self, 
+            content_object=self,
             action=action,
-            subject=subject, 
-            sender=sender, 
-            recipients=recipients, 
+            subject=subject,
+            sender=sender,
+            recipients=recipients,
             message=message,
         )
         if refs and getattr(settings, 'NOTIFIER_REFS_ENABLED', False):
