@@ -1,14 +1,15 @@
+from __future__ import unicode_literals
 from django.contrib import admin
 from django.conf import settings
 from django.utils.safestring import mark_safe
+from .list_filters import DataFilter
 from .models import EmailTemplate, SentNotification
-from .utils import generate_all_notifier_templates
 
 
+@admin.register(EmailTemplate)
 class EmailTemplateAdmin(admin.ModelAdmin):
 
     list_display = ('friendly_description', 'subject')
-
     fields = ('friendly_description', 'subject', 'body', 'available_fields')
     readonly_fields = ('friendly_description', 'available_fields',)
 
@@ -28,36 +29,13 @@ class EmailTemplateAdmin(admin.ModelAdmin):
     def has_add_permission(self, request):
         return False
 
-admin.site.register(EmailTemplate, EmailTemplateAdmin)
 
-
-class DataFilter(admin.SimpleListFilter):
-    title = 'data filter'
-    parameter_name = 'related_objects'
-
-    def lookups(self, request, model_admin):
-        #This doesn't return all keys, it only return keys of the first SentNotification object. 
-        #keys = SentNotification.objects.hkeys(attr='data')
-        #choices = [(key, key) for key in keys]
-        choices = [('', ''), ] # we need to return a list with choices or thie list filter will be ignored. 
-        return choices
-
-    def queryset(self, request, queryset):
-        query_value = self.value()
-        if query_value: 
-            if ':' in query_value:
-                key, val = query_value.split(':')
-                query = {'data__at_%s' % key: val}
-                return queryset.filter(**query)
-            else:
-                return queryset.filter(data__contains=query_value)
-
-
+@admin.register(SentNotification)
 class SentNotificationAdmin(admin.ModelAdmin):
-    list_display = ('action', 'timestamp', 'subject')
+    
+    list_display = ('action', 'subject', 'sender', 'recipient_list', 'timestamp')
+    list_filter = ('action', DataFilter) if getattr(settings, 'NOTIFIER_REFS_ENABLED', False) else ('action',)
+    
+    def recipient_list(self, obj):
+        return ', '.join(obj.recipients)
 
-    list_filter = ('action', )
-    if getattr(settings, 'NOTIFIER_REFS_ENABLED', False):
-        list_filter = ('action', DataFilter, )
-
-admin.site.register(SentNotification, SentNotificationAdmin)
