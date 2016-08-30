@@ -6,21 +6,6 @@ from .list_filters import DataFilter
 from .models import EmailTemplate, SentNotification
 
 
-
-# Modeladmin mixins
-
-class NotifierActions(object):
-
-    # Support for django_row_actions
-    def get_row_actions(self, obj):
-        row_actions = super(NotifierActions, self).get_row_actions(obj)
-        notifier_actions = obj._get_notifier_actions_list()
-        if notifier_actions:
-            notifier_actions[0]['divided'] = True
-            row_actions += notifier_actions
-        return row_actions
-
-
 # Model admin classes
 
 @admin.register(EmailTemplate)
