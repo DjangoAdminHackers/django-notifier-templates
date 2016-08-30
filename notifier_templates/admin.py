@@ -6,8 +6,6 @@ from .list_filters import DataFilter
 from .models import EmailTemplate, SentNotification
 
 
-# Model admin classes
-
 @admin.register(EmailTemplate)
 class EmailTemplateAdmin(admin.ModelAdmin):
 
