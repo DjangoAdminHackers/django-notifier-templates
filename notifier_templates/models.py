@@ -114,7 +114,7 @@ class HasNotifiers(NotifierRefMixin):
         """
         return cls().get_notifier_context(action).keys()
 
-    def get_notifier_context(self, action):
+    def get_notifier_context(self, action, request=None):
         """
         Simple default context that just includes:
         a) the notifier action
@@ -153,12 +153,12 @@ class HasNotifiers(NotifierRefMixin):
             sent_notification.data = data
         sent_notification.save()
 
-    def get_notifier_recipients(self, action):
+    def get_notifier_recipients(self, action, request=None):
         # TODO make this more general
         # Currently this expects a list of objects that each have property called 'email'
         raise NotImplementedError
 
-    def get_notifier_sender(self, action):
+    def get_notifier_sender(self, action, request=None):
         return notifier_dbsettings.from_address
 
     def get_auto_notifer_email(self, action):
@@ -172,8 +172,7 @@ class HasNotifiers(NotifierRefMixin):
             recipients=recipients,
             html=html,
         )
-
-
+    
     def send_auto_notifer_email(self, action):
         from notifier_templates.utils import send_html_email
         kwargs = self.get_auto_notifer_email(action)
@@ -220,18 +219,8 @@ class HasNotifiers(NotifierRefMixin):
         return all_candidates
 
 
-class NotifierActions(object):
-
-    def get_row_actions(self, obj):
-        row_actions = super(NotifierActions, self).get_row_actions(obj)
-        notifier_actions = obj._get_notifier_actions_list()
-        if notifier_actions:
-            notifier_actions[0]['divided'] = True
-            row_actions += notifier_actions
-        return row_actions
-
-
 class SentNotification(models.Model):
+    
     timestamp = models.DateTimeField(default=timezone.now)
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()

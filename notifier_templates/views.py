@@ -132,11 +132,11 @@ def notify(request, app_label, model_name, pk, action):
             name=obj.get_email_template(action),
             content_type=content_type,
         )
-        context = obj.get_notifier_context(action)
+        context = obj.get_notifier_context(action, request=request)
 
         try:
-            validate_email(obj.get_notifier_sender(action))
-            sender = obj.get_notifier_sender(action)
+            validate_email(obj.get_notifier_sender(action, request=request))
+            sender = obj.get_notifier_sender(action, request=request)
         except ValidationError:
             sender = None
 
@@ -147,7 +147,7 @@ def notify(request, app_label, model_name, pk, action):
         # or even better - a list of potential recipients with some indication of their role
         # and allow the user to choose
         recipients = []
-        for recipient in obj.get_notifier_recipients(action):
+        for recipient in obj.get_notifier_recipients(action, request=request):
             email = getattr(recipient, 'email', False)
             if not email and isinstance(recipient, basestring):
                 email = recipient
