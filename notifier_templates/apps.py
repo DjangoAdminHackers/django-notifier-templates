@@ -2,6 +2,7 @@ import logging
 
 from django.apps import AppConfig
 from django.db import DatabaseError
+from django.db import ProgrammingError
 
 from .utils import generate_all_notifier_templates
 
@@ -17,6 +18,10 @@ class NotifierTemplateAppConfig(AppConfig):
     def ready(self):
         try:
             generate_all_notifier_templates()
-        except DatabaseError:
+        except (DatabaseError, RuntimeError, ProgrammingError) as e:
             # During migrations we are called before the table has been created
-            logger.warn("Skipping generate_all_notifier_templates as db table doesn't exist")
+            if ("Please make sure contenttypes is migrated" in str(e)
+                    or 'notifier_templates_emailtemplate\' doesn\'t exist' in str(e)):
+                logger.warn("Skipping generatie notifier templates as db tables don't yet exist")
+            else:
+                raise
