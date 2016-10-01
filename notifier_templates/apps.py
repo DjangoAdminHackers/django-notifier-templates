@@ -22,6 +22,6 @@ class NotifierTemplateAppConfig(AppConfig):
             # During migrations we are called before the table has been created
             if ("Please make sure contenttypes is migrated" in str(e)
                     or 'notifier_templates_emailtemplate\' doesn\'t exist' in str(e)):
-                logger.warn("Skipping generatie notifier templates as db tables don't yet exist")
+                logger.warn("Skipping generation of notifier templates as db tables don't yet exist")
             else:
                 raise
