@@ -4,8 +4,6 @@ from django.apps import AppConfig
 from django.db import DatabaseError
 from django.db import ProgrammingError
 
-from .utils import generate_all_notifier_templates
-
 
 logger = logging.getLogger(__name__)
 
@@ -16,6 +14,11 @@ class NotifierTemplateAppConfig(AppConfig):
     verbose_name = 'Notification Templates'
 
     def ready(self):
+        
+        # Import locally otherwise models are imported before
+        # apps are initialized
+        from .utils import generate_all_notifier_templates
+        
         try:
             generate_all_notifier_templates()
         except (DatabaseError, RuntimeError, ProgrammingError) as e:
