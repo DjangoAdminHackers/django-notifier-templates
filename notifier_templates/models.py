@@ -1,6 +1,6 @@
+from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
-from django.contrib.contenttypes import generic
 from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.db import models
@@ -53,7 +53,7 @@ class EmailTemplate(models.Model):
 
 
 def get_obj_ref_str(obj):
-    return u'%s.%s:%s' % (obj._meta.app_label, obj._meta.model_name, obj.pk)
+    return u'{}.{}:{}'.format(obj._meta.app_label, obj._meta.model_name, obj.pk)
 
 
 class NotifierRefMixin(object):
@@ -83,6 +83,9 @@ class HasNotifiers(NotifierRefMixin):
         except AttributeError:
             # No specific callback - default behaviour goes here
             pass
+        
+    def get_notifier_actions(self):
+        raise NotImplementedError
 
     def _get_notifier_actions_list(self):
 
@@ -147,7 +150,7 @@ class HasNotifiers(NotifierRefMixin):
         if refs and getattr(settings, 'NOTIFIER_REFS_ENABLED', False):
             data = {}
             for k, ref in refs.items():
-                key = u'%s.%s' % (ref._meta.app_label, ref._meta.model_name)
+                key = u'{}.{}'.format(ref._meta.app_label, ref._meta.model_name)
                 value = ref.pk
                 data[key] = value
             sent_notification.data = data
@@ -224,7 +227,7 @@ class SentNotification(models.Model):
     timestamp = models.DateTimeField(default=timezone.now)
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
-    content_object = generic.GenericForeignKey('content_type', 'object_id')
+    content_object = GenericForeignKey('content_type', 'object_id')
     action = models.CharField(max_length=128)
 
     subject = models.CharField(max_length=512)
