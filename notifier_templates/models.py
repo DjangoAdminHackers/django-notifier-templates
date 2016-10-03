@@ -168,7 +168,7 @@ class HasNotifiers(NotifierRefMixin):
         recipients = [getattr(x, 'email', None) or x for x in self.get_notifier_recipients(action)]
         email_template = self._meta.model.get_email_template(action)
         context = self.get_notifier_context(action)
-        html=email_template.render(Context(context))
+        html = email_template.render(Context(context))
         return dict(
             subject=email_template.subject, 
             sender=self.get_notifier_sender(action),
@@ -180,7 +180,6 @@ class HasNotifiers(NotifierRefMixin):
         from notifier_templates.utils import send_html_email
         kwargs = self.get_auto_notifer_email(action)
         send_html_email(**kwargs)
-        #import pdb; pdb.set_trace()
         kwargs['recipients'] = ','.join(kwargs['recipients'])
         kwargs['message'] = kwargs['html']
         del kwargs['html'] 
