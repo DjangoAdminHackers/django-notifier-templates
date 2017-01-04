@@ -46,7 +46,7 @@ def generate_email_html(subject, sender, recipients, html, plain=None, **kwargs)
         return html
 
 
-def send_html_email(subject, sender, recipients, html, attachments=None, plain=None):
+def send_html_email(subject, sender, recipients, html, attachments=None, plain=None, cc=None, bcc=None):
 
     html = generate_email_html(subject, sender, recipients, html, plain)
 
@@ -58,6 +58,8 @@ def send_html_email(subject, sender, recipients, html, attachments=None, plain=N
         body=plain,
         from_email=sender,
         to=recipients,
+        cc=cc,
+        bcc=bcc,
         attachments=attachments,
     )
 
