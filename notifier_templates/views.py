@@ -11,7 +11,7 @@ from django.template import RequestContext, Context
 
 from notifier_templates.forms import EmailEditForm, EmailWithAttachmentsEditForm
 from notifier_templates.models import HasNotifiers, EmailTemplate
-from notifier_templates.utils import send_html_email, generate_email_html
+from notifier_templates.utils import generate_email_html
 
 
 @staff_member_required

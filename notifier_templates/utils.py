@@ -80,7 +80,7 @@ def do_notify(app_label, model_name, pk, action):
     )
     context = obj.get_notifier_context(action)
     html=email_template.render(Context(context))
-    send_html_email(
+    obj.send_notifier_email(
         subject=email_template.subject,
         sender=obj.get_notifier_sender(action),
         recipients=recipients,
