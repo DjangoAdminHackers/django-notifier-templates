@@ -179,12 +179,15 @@ class HasNotifiers(NotifierRefMixin):
     def send_auto_notifer_email(self, action):
         from notifier_templates.utils import send_html_email
         kwargs = self.get_auto_notifer_email(action)
-        send_html_email(**kwargs)
+        self.send_notifier_email(**kwargs)
         kwargs['recipients'] = ','.join(kwargs['recipients'])
         kwargs['message'] = kwargs['html']
         del kwargs['html'] 
         self.store_sent_notification(action, **kwargs)
         return True
+    
+    def send_notifier_email(self, *args, **kwargs):
+        send_html_email(*args, **kwargs)
     
     @classmethod
     def get_candidates(cls, action):

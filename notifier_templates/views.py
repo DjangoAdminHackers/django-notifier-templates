@@ -105,7 +105,7 @@ def notify(request, app_label, model_name, pk, action):
             else:
                 attachments = None
 
-            send_html_email(
+            obj.send_notifier_email(
                 subject=form.cleaned_data['subject'],
                 sender=form.cleaned_data['sender'],
                 recipients=form.cleaned_data['recipients'],
