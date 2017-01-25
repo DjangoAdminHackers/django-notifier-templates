@@ -95,9 +95,8 @@ def generate_notifier_template(cls, name, content_type=None):
     # We could add any global template defaults here
     # such as company name etc.
     default_context = Context({})
-    template = loader.get_template('emails/{}.html'.format(name))
+    template = loader.get_template('emails/{}.html'.format(name)).template
     body = template.render(default_context)
-    name = name
     content_type = content_type or ContentType.objects.get_for_model(cls, for_concrete_model=False)
     # See if the template has: {% with subject="Your subject" %}{% endwith %}
     # and use that as the subject if so
