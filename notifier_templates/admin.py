@@ -35,6 +35,12 @@ class SentNotificationAdmin(admin.ModelAdmin):
     
     list_display = ('action', 'subject', 'sender', 'recipient_list', 'timestamp')
     list_filter = ('action', DataFilter) if getattr(settings, 'NOTIFIER_REFS_ENABLED', False) else ('action',)
+    search_fields = [
+        'subject',
+        'sender',
+        'recipients',
+        'message',
+    ]
     
     def recipient_list(self, obj):
         return ', '.join(obj.recipients)
