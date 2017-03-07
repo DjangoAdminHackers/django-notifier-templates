@@ -3,6 +3,7 @@ import logging
 from django.apps import AppConfig
 from django.db import DatabaseError
 from django.db import ProgrammingError
+from django.db.models.signals import post_migrate
 
 
 logger = logging.getLogger(__name__)
@@ -14,17 +15,14 @@ class NotifierTemplateAppConfig(AppConfig):
     verbose_name = 'Notification Templates'
 
     def ready(self):
-        
-        # Import locally otherwise models are imported before
-        # apps are initialized
-        from .utils import generate_all_notifier_templates
-        
-        try:
-            generate_all_notifier_templates()
-        except (DatabaseError, RuntimeError, ProgrammingError) as e:
-            # During migrations we are called before the table has been created
-            if ("Please make sure contenttypes is migrated" in str(e)
-                    or 'notifier_templates_emailtemplate\' doesn\'t exist' in str(e)):
-                logger.warn("Skipping generation of notifier templates as db tables don't yet exist")
-            else:
-                raise
+        super(NotifierTemplateAppConfig, self).ready()
+        post_migrate.connect(do_generate_all_notifier_templates, sender=self)
+
+
+def do_generate_all_notifier_templates(**kwargs):
+    # Import locally otherwise models are imported before
+    # apps are initialized
+    from .utils import generate_all_notifier_templates
+    generate_all_notifier_templates()
+
+
