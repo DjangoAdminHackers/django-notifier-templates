@@ -158,7 +158,10 @@ def notify(request, app_label, model_name, pk, action):
             'subject': email_template.subject,
             'sender': sender,
             'recipients': recipients or '',
-            'message': email_template.render(Context(context)),
+            'message': email_template.render(
+                context=Context(context),
+                custom_body_callback=obj.notifier_custom_template_body,
+            ),
             'referrer': referrer,
 
         }

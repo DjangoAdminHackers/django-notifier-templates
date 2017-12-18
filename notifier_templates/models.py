@@ -41,8 +41,11 @@ class EmailTemplate(models.Model):
     content_type = models.ForeignKey(ContentType)
     content_type.verbose_name = 'For'
 
-    def render(self, context):
-        return Template(self.body).render(context)
+    def render(self, context, custom_body_callback):
+        body = custom_body_callback(self, context)
+        if body is None:  # If it hasn't been customised then use the global template
+            body = self.body
+        return Template(body).render(context)
 
     class Meta:
         ordering = ['name']
@@ -188,6 +191,11 @@ class HasNotifiers(NotifierRefMixin):
     def send_notifier_email(self, *args, **kwargs):
         from notifier_templates.utils import send_html_email
         send_html_email(*args, **kwargs)
+
+    def notifier_custom_template_body(self, template, context):
+        # Override if you want to sometimes customise the email body per object
+        # Simply return the template body you want (including any {{}} template parameters)
+        return None
     
     @classmethod
     def get_candidates(cls, action):
