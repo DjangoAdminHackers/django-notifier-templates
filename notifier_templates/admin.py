@@ -32,9 +32,14 @@ class EmailTemplateAdmin(admin.ModelAdmin):
 
 @admin.register(SentNotification)
 class SentNotificationAdmin(admin.ModelAdmin):
-    
+
+    date_hierarchy = 'timestamp'
     list_display = ('action', 'subject', 'sender', 'recipient_list', 'timestamp')
-    list_filter = ('action', DataFilter) if getattr(settings, 'NOTIFIER_REFS_ENABLED', False) else ('action',)
+    list_filter = [
+          'action',
+          'timestamp',
+    ] + ([DataFilter] if getattr(settings, 'NOTIFIER_REFS_ENABLED', False) else [])
+
     search_fields = [
         'subject',
         'sender',
