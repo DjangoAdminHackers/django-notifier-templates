@@ -24,5 +24,3 @@ def do_generate_all_notifier_templates(**kwargs):
     # apps are initialized
     from .utils import generate_all_notifier_templates
     generate_all_notifier_templates()
-
-
