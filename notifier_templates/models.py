@@ -41,10 +41,11 @@ class EmailTemplate(models.Model):
     content_type = models.ForeignKey(ContentType)
     content_type.verbose_name = 'For'
 
-    def render(self, context, custom_body_callback):
-        body = custom_body_callback(self, context)
-        if body is None:  # If it hasn't been customised then use the global template
-            body = self.body
+    def render(self, context, custom_body_callback=None):
+        body = None
+        if custom_body_callback is not None:
+            body = custom_body_callback(self, context)  # Could return None
+        body = body or self.body  # Fall back to self.body if we haven't managed to get a custom body
         return Template(body).render(context)
 
     class Meta:
