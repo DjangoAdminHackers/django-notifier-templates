@@ -180,8 +180,11 @@ class HasNotifiers(NotifierRefMixin):
             html=html,
         )
     
-    def send_auto_notifer_email(self, action):
+    def send_auto_notifer_email(self, action, sender=None):
         kwargs = self.get_auto_notifer_email(action)
+        if sender:
+            # Override sender
+            kwargs['sender'] = sender
         self.send_notifier_email(**kwargs)
         kwargs['recipients'] = ','.join(kwargs['recipients'])
         kwargs['message'] = kwargs['html']
