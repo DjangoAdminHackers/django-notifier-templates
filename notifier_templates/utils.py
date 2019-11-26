@@ -10,6 +10,10 @@ import pynliner
 from notifier_templates import notifier_settings
 from notifier_templates.admin_settings import notifier_dbsettings
 from notifier_templates.models import EmailTemplate, HasNotifiers
+try:
+    from bs4 import BeautifulSoup
+except ImportError:
+    BeautifulSoup = None
 
 
 def generate_email_html(subject, sender, recipients, html, plain=None, **kwargs):
@@ -51,7 +55,20 @@ def send_html_email(subject, sender, recipients, html, attachments=None, plain=N
     html = generate_email_html(subject, sender, recipients, html, plain)
 
     if plain is None:
-        plain = strip_tags(html)
+        if BeautifulSoup:
+            # https://stackoverflow.com/questions/30565404/remove-all-style-scripts-and-html-tags-from-an-html-page/30565420
+            soup = BeautifulSoup(html)
+            for to_remove in soup(["script", "style"]): # remove all javascript and stylesheet code
+                to_remove.extract()
+            text = soup.get_text()
+            # break into lines and remove leading and trailing space on each
+            lines = (line.strip() for line in text.splitlines())
+            # break multi-headlines into a line each
+            chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
+            # drop blank lines
+            plain = '\n'.join(chunk for chunk in chunks if chunk)
+        else:
+            plain = strip_tags(html)
 
     msg = EmailMultiAlternatives(
         subject=subject,
