@@ -38,15 +38,29 @@ class EmailTemplate(models.Model):
     name = models.CharField("Email type", max_length=256)
     subject = models.CharField("Default email subject", max_length=256)
     body = MCEField(js='mce_emails.js', null=True, blank=True)
+    plain_body = models.TextField(default='', blank=True)
+    is_plain_only = models.BooleanField(default=False)
+
     content_type = models.ForeignKey(ContentType)
     content_type.verbose_name = 'For'
 
     def render(self, context, custom_body_callback=None):
+        """The html content of the email """
         body = None
         if custom_body_callback is not None:
             body = custom_body_callback(self, context)  # Could return None
-        body = body or self.body  # Fall back to self.body if we haven't managed to get a custom body
+        if not body:
+            # Fall back to self.body or self.plain_body if we haven't managed to get a custom body
+            if self.is_plain_only:
+                # for plain only email template, we return empty HTML
+                return ''
+            else:
+                body = self.body
         return Template(body).render(context)
+
+    def render_plain(self, context):
+        """The plain text content of the email """
+        return Template(self.plain_body).render(context)
 
     class Meta:
         ordering = ['name']
@@ -141,7 +155,7 @@ class HasNotifiers(NotifierRefMixin):
     def get_notifier_refs(self, action):
         return []
 
-    def store_sent_notification(self, action, subject, sender, recipients, message):
+    def store_sent_notification(self, action, subject, sender, recipients, message, plain=''):
         refs = self.get_notifier_refs(action)
         sent_notification = SentNotification(
             content_object=self,
@@ -150,6 +164,7 @@ class HasNotifiers(NotifierRefMixin):
             sender=sender,
             recipients=recipients,
             message=message,
+            plain=plain,
         )
         if refs and getattr(settings, 'NOTIFIER_REFS_ENABLED', False):
             data = {}
@@ -173,12 +188,15 @@ class HasNotifiers(NotifierRefMixin):
         email_template = self._meta.model.get_email_template(action)
         context = self.get_notifier_context(action)
         html = email_template.render(Context(context))
-        return dict(
+        plain = email_template.render_plain(Context(context))
+        email_dict = dict(
             subject=email_template.subject, 
             sender=self.get_notifier_sender(action),
             recipients=recipients,
             html=html,
+            plain=plain,
         )
+        return email_dict
     
     def send_auto_notifer_email(self, action, sender=None):
         kwargs = self.get_auto_notifer_email(action)
@@ -193,8 +211,12 @@ class HasNotifiers(NotifierRefMixin):
         return True
     
     def send_notifier_email(self, *args, **kwargs):
-        from notifier_templates.utils import send_html_email
-        send_html_email(*args, **kwargs)
+        from notifier_templates.utils import send_html_email, send_plain_email
+        if not kwargs['html'] and kwargs['plain']:
+            # plain only email
+            send_plain_email(*args, **kwargs)
+        else:
+            send_html_email(*args, **kwargs)
 
     def notifier_custom_template_body(self, template, context):
         # Override if you want to sometimes customise the email body per object
@@ -248,7 +270,8 @@ class SentNotification(models.Model):
     sender = models.EmailField()
     recipients = MultiEmailField(help_text="You can enter multiple email addresses, one per line.")
     message = MCEField()
-
+    plain = models.TextField(default='', blank=True)
+    
     if django_pgjson and getattr(settings, 'NOTIFIER_REFS_ENABLED', False):
         data = JsonField()  # can pass attributes like null, blank, ecc.
 

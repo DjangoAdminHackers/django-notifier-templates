@@ -10,7 +10,7 @@ from .models import EmailTemplate, SentNotification
 class EmailTemplateAdmin(admin.ModelAdmin):
 
     list_display = ('friendly_description', 'subject')
-    fields = ('friendly_description', 'subject', 'body', 'available_fields')
+    fields = ('friendly_description', 'subject', 'body', 'available_fields', 'plain_body', 'is_plain_only')
     readonly_fields = ('friendly_description', 'available_fields',)
 
     def friendly_description(self, obj):

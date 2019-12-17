@@ -114,6 +114,7 @@ def notify(request, app_label, model_name, pk, action):
                 recipients=form.cleaned_data['recipients'],
                 html=form.cleaned_data['message'],
                 attachments=attachments,
+                plain=form.cleaned_data['plain'],
             )
 
             obj.store_sent_notification(
@@ -121,7 +122,8 @@ def notify(request, app_label, model_name, pk, action):
                 subject=form.cleaned_data['subject'],
                 sender=form.cleaned_data['sender'],
                 recipients=','.join(form.cleaned_data['recipients']),
-                message=form.cleaned_data['message']
+                message=form.cleaned_data['message'],
+                plain = form.cleaned_data['plain'],
             )
 
             messages.add_message(request, messages.INFO, 'Notification sent')
@@ -164,6 +166,9 @@ def notify(request, app_label, model_name, pk, action):
             'message': email_template.render(
                 context=Context(context),
                 custom_body_callback=obj.notifier_custom_template_body,
+            ),
+            'plain': email_template.render_plain(
+                context=Context(context),
             ),
             'referrer': referrer,
         }

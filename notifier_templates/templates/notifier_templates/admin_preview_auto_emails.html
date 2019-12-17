@@ -30,6 +30,13 @@
               <tr>
                   <td colspan="2">{{ email.html|safe }}</td>
               </tr>
+              <tr>
+                  <th colspan="2">Plain</th>
+              </tr>
+              <tr>
+                  <td colspan="2">{{ email.plain|linebreaks }}</td>
+              </tr>
+
           </table>
           <hr />
       {% endfor %}

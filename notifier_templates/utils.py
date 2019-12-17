@@ -1,7 +1,7 @@
 import os
 from django.conf import settings
 from django.contrib.sites.models import Site
-from django.core.mail import EmailMultiAlternatives
+from django.core.mail import EmailMultiAlternatives, EmailMessage
 from django.contrib.contenttypes.models import ContentType
 from django.template import loader, Context, Template
 from django.utils import timezone
@@ -81,6 +81,20 @@ def send_html_email(subject, sender, recipients, html, attachments=None, plain=N
     )
 
     msg.attach_alternative(html, "text/html")
+    msg.send()
+    return msg
+
+
+def send_plain_email(subject, sender, recipients, html, attachments=None, plain=None, cc=None, bcc=None):
+    msg = EmailMessage(
+        subject=subject,
+        body=plain,
+        from_email=sender,
+        to=recipients,
+        cc=cc,
+        bcc=bcc,
+        attachments=attachments,
+    )
     msg.send()
     return msg
 
