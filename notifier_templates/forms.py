@@ -12,7 +12,7 @@ class EmailEditForm(forms.Form):
     recipients = MultiEmailField(help_text="You can enter multiple email addresses, one per line.", widget=MultiEmailWidget(attrs={'rows': '3'}))
     referrer = forms.CharField(widget=forms.HiddenInput())
     message = MCEFormField(required=False, config_js_file='mce_emails.js')
-    plain = forms.CharField(required=False, widget=forms.Textarea)
+    plain = forms.CharField(required=False, widget=forms.Textarea(attrs={'cols': 120, 'rows': 120}))
 
 
 class EmailWithAttachmentsEditForm(EmailEditForm):
