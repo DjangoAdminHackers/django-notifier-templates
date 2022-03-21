@@ -9,13 +9,22 @@
 
   {% if form %}
     <div class="change-form">
-      <form method="post">
+      <form method="post" id="send_notification_form">
         {% csrf_token %}
         <div class="module">
         	<table id="edit-email">{{ form }}</table>
         </div>
-        <input class="form-input-button" type="submit" name="submitButton" value="Send" />
+        <input id="send_notification_button" class="form-input-button" type="submit" name="submitButton" value="Send" />
       </form>
     </div>
+    <script>
+        $(function(){
+            $('#send_notification_form').submit(function(){
+                $('#send_notification_button').attr('disabled', true).val('Loading...').css('background', 'grey');
+            })
+        })
+    </script>
   {% endif %}
 {% endblock %}
+
+
