@@ -41,7 +41,7 @@ class EmailTemplate(models.Model):
     plain_body = models.TextField(default='', blank=True)
     is_plain_only = models.BooleanField(default=False)
 
-    content_type = models.ForeignKey(ContentType)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     content_type.verbose_name = 'For'
 
     def render(self, context, custom_body_callback=None):
@@ -261,7 +261,7 @@ class HasNotifiers(NotifierRefMixin):
 class SentNotification(models.Model):
     
     timestamp = models.DateTimeField(default=timezone.now)
-    content_type = models.ForeignKey(ContentType)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey('content_type', 'object_id')
     action = models.CharField(max_length=128)
