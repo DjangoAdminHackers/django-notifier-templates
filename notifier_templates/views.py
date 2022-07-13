@@ -6,7 +6,7 @@ from django.urls import reverse
 from django.core.validators import validate_email
 from django.db import models
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseBadRequest
-from django.shortcuts import render_to_response
+from django.shortcuts import render as render_to_response
 from django.template import RequestContext, Context
 
 from notifier_templates.forms import EmailEditForm, EmailWithAttachmentsEditForm
@@ -49,8 +49,7 @@ def admin_helper(request):
     return render_to_response(
         'notifier_templates/admin_helper.html', {
             'sections': sections,
-        }, RequestContext(request),
-    )
+        },     )
 
 @staff_member_required
 def admin_preview_auto_emails(request, app_label, model_name):
@@ -71,8 +70,7 @@ def admin_preview_auto_emails(request, app_label, model_name):
         'notifier_templates/admin_preview_auto_emails.html', {
             'emails': emails,
             'rules': rules,
-        }, RequestContext(request),
-    )
+        },     )
 
 
 @staff_member_required
@@ -185,6 +183,5 @@ def notify(request, app_label, model_name, pk, action):
             'obj': obj,
             'form': form,
             'title': title,
-        }, RequestContext(request),
-    )
+        },     )
     
