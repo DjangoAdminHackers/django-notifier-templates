@@ -21,7 +21,7 @@ class Migration(migrations.Migration):
                 ('name', models.CharField(max_length=256, verbose_name=b'Email type')),
                 ('subject', models.CharField(max_length=256, verbose_name=b'Default email subject')),
                 ('body', mcefield.custom_fields.MCEField(max_length=4000, null=True, blank=True)),
-                ('content_type', models.ForeignKey(to='contenttypes.ContentType')),
+                ('content_type', models.ForeignKey(on_delete=models.CASCADE, to='contenttypes.ContentType')),
             ],
             options={
                 'ordering': ['name'],
@@ -39,7 +39,7 @@ class Migration(migrations.Migration):
                 ('sender', models.EmailField(max_length=75)),
                 ('recipients', multi_email_field.fields.MultiEmailField(help_text=b'You can enter multiple email addresses, one per line.')),
                 ('message', mcefield.custom_fields.MCEField(max_length=4000)),
-                ('content_type', models.ForeignKey(to='contenttypes.ContentType')),
+                ('content_type', models.ForeignKey(on_delete=models.CASCADE, to='contenttypes.ContentType')),
             ],
             options={
             },
