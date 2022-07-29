@@ -152,7 +152,7 @@ def notify(request, app_label, model_name, pk, action):
         recipients = []
         for recipient in obj.get_notifier_recipients(action, request=request):
             email = getattr(recipient, 'email', False)
-            if not email and isinstance(recipient, basestring):
+            if not email and isinstance(recipient, str):
                 email = recipient
             if email:
                 recipients.append(email)

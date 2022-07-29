@@ -162,7 +162,7 @@ def generate_all_notifier_templates():
             if subcls_list:
                 recurse_subclasses(subcls_list)
             for action in getattr(subcls, 'NOTIFIER_TYPES', []):
-                if not isinstance(action, basestring):
+                if not isinstance(action, str):
                     # must be a CHOICES tuple
                     name = action[0]
                 generate_notifier_template(subcls, name)
