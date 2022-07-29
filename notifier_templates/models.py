@@ -10,7 +10,10 @@ from django.template import Context, Template
 from multi_email_field.fields import MultiEmailField
 
 from mcefield.custom_fields import MCEField
-from notifier_templates.admin_settings import notifier_dbsettings
+try:
+    from constance import config as notifier_dbsettings
+except ImportError:
+    from notifier_templates.admin_settings import notifier_dbsettings
 
 
 try:

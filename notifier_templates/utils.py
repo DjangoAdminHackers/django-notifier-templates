@@ -8,7 +8,11 @@ from django.utils import timezone
 from django.utils.html import strip_tags
 import pynliner
 from notifier_templates import notifier_settings
-from notifier_templates.admin_settings import notifier_dbsettings
+try:
+    from constance import config as notifier_dbsettings
+except ImportError:
+    from notifier_templates.admin_settings import notifier_dbsettings
+
 from notifier_templates.models import EmailTemplate, HasNotifiers
 try:
     from bs4 import BeautifulSoup
