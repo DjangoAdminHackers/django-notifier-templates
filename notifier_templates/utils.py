@@ -34,7 +34,7 @@ def generate_email_html(subject, sender, recipients, html, plain=None, **kwargs)
     else:
         logo_url = None
 
-    html = template.render(Context({
+    html = template.render({
         'title': subject,
         'text_color': '333333',
         'year': timezone.now().year,
@@ -47,7 +47,7 @@ def generate_email_html(subject, sender, recipients, html, plain=None, **kwargs)
         'site_url': notifier_dbsettings.site_url,
         'footer': notifier_dbsettings.email_footer,
         'logo_url': logo_url,
-    }))
+    })
     if notifier_settings.USE_PYNLINER:
         return pynliner.fromString(html)
     else:
@@ -116,7 +116,7 @@ def do_notify(app_label, model_name, pk, action):
         content_type=content_type
     )
     context = obj.get_notifier_context(action)
-    html=email_template.render(Context(context))
+    html=email_template.render(context)
     obj.send_notifier_email(
         subject=email_template.subject,
         sender=obj.get_notifier_sender(action),

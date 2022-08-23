@@ -190,7 +190,7 @@ class HasNotifiers(NotifierRefMixin):
         recipients = [getattr(x, 'email', None) or x for x in self.get_notifier_recipients(action)]
         email_template = self._meta.model.get_email_template(action)
         context = self.get_notifier_context(action)
-        html = email_template.render(Context(context))
+        html = email_template.render(context)
         plain = email_template.render_plain(Context(context))
         email_dict = dict(
             subject=email_template.subject, 
