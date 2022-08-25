@@ -131,10 +131,8 @@ def notify(request, app_label, model_name, pk, action):
 
     else:
 
-        email_template = EmailTemplate.objects.get(
-            name=obj.get_email_template(action),
-            content_type=content_type,
-        )
+        email_template = obj.get_email_template(action)
+
         context = obj.get_notifier_context(action, request=request)
 
         try:
@@ -179,9 +177,10 @@ def notify(request, app_label, model_name, pk, action):
     title = label.title()
 
     return render_to_response(
+        request,
         'notifier_templates/edit_email.html', {
             'obj': obj,
             'form': form,
             'title': title,
-        },     )
+        })
     

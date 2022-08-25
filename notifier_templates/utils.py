@@ -111,10 +111,7 @@ def do_notify(app_label, model_name, pk, action):
     label = [x['label'] for x in actions if x['type']==action][0]
     recipients = [getattr(x, 'email', None) or x for x in obj.get_notifier_recipients(action)]
 
-    email_template = EmailTemplate.objects.get(
-        name=obj.get_email_template(action),
-        content_type=content_type
-    )
+    email_template = obj.get_email_template(action)
     context = obj.get_notifier_context(action)
     html=email_template.render(context)
     obj.send_notifier_email(
